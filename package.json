@@ -1,0 +1,30 @@
+{
+	"name": "normative",
+	"version": "1.0.0",
+	"description": "Iván Ovejero",
+	"main": "index.js",
+	"scripts": {
+		"start": "tsc && node build/main.js",
+		"test": "jest --verbose --silent"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT",
+	"dependencies": {
+		"chalk": "^4.0.0",
+		"cheerio": "^1.0.0-rc.3",
+		"dotenv": "^8.2.0",
+		"firebase": "^7.14.1",
+		"html-entities": "^1.3.1",
+		"json-stringify-pretty-compact": "^2.0.0",
+		"mammoth": "^1.4.9",
+		"mongoose": "^5.9.10"
+	},
+	"devDependencies": {
+		"@types/cheerio": "^0.22.17",
+		"@types/jest": "^25.2.1",
+		"jest": "^25.4.0",
+		"ts-jest": "^25.4.0",
+		"typescript": "^3.8.3"
+	}
+}

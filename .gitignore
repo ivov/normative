@@ -1,0 +1,7 @@
+/node_modules
+/build
+/db/json/English/
+/db/json/Spanish/
+*.docx
+*.env
+notes.md
