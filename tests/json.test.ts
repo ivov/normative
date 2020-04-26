@@ -61,7 +61,6 @@ describe("Number of JSON entries", () => {
 	test("English: JSON entries are equal in number to DOCX entries", async () => {
 		const cheerioResult = await getCheerioResult("English");
 		const summary = makeSummary(engConverter, cheerioResult);
-		console.log(summary.length);
 		expect(cheerioResult.length).toEqual(summary.length);
 	});
 

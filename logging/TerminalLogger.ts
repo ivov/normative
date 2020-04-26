@@ -82,11 +82,7 @@ export default class TerminalLogger {
 		language: AvailableLanguages,
 		filename: string
 	): void {
-		const parsedObject = JsonManager.retrieveEntryAsParsedObject(
-			language,
-			filename
-		);
-		const entry = Entry.createFromParsedObject(parsedObject);
+		const entry = JsonManager.convertJsonToEntry(language, filename);
 
 		const decodeHtml = (html: string) => {
 			return html

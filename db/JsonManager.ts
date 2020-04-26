@@ -39,20 +39,28 @@ export default class JsonManager {
 	}
 
 	/**Returns a summary from a JSON file.*/
-	public static retrieveSummaryOfEntries(language: AvailableLanguages) {
+	public static getSummaryOfEntries(language: AvailableLanguages): string[] {
 		const data = fs.readFileSync(
 			`db/json/${language}/!allEntriesIn${language}.json`
 		);
 		return JSON.parse(data.toString());
 	}
 
-	/**Returns an object parsed from a JSON file.*/
-	public static retrieveEntryAsParsedObject(
+	/**Converts a JSON file into an entry.*/
+	public static convertJsonToEntry(
 		language: AvailableLanguages,
 		filename: string
-	): { [key: string]: any } {
+	): Entry {
 		const data = fs.readFileSync(`db/json/${language}/${filename}`);
-		return JSON.parse(data.toString());
+		const parsedObject = JSON.parse(data.toString());
+		const entry = new Entry(parsedObject.term, parsedObject.translation);
+
+		for (let property in parsedObject) {
+			if (property !== "term" && property !== "translation")
+				entry[property] = parsedObject[property];
+		}
+
+		return entry;
 	}
 
 	/**Deletes all JSON entries for a given language in its directory.*/

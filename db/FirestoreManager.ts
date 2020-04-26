@@ -30,20 +30,17 @@ export default class FirestoreManager {
 		);
 
 		for (let filename of entryFilenames) {
-			const parsedObject = JsonManager.retrieveEntryAsParsedObject(
-				language,
-				filename
-			);
+			const entry = JsonManager.convertJsonToEntry(language, filename);
 
 			await db
 				.collection(language + "-terms")
-				.doc(parsedObject.slug)
-				.set({ ...parsedObject }, { merge: true });
+				.doc(entry.slug)
+				.set({ ...entry }, { merge: true });
 
-			TerminalLogger.logUploadedEntries(language, parsedObject.slug);
+			TerminalLogger.logUploadedEntries(language, entry.slug);
 		}
 
-		const summaryOfEntries = JsonManager.retrieveSummaryOfEntries(language);
+		const summaryOfEntries = JsonManager.getSummaryOfEntries(language);
 
 		await db
 			.collection("Summaries")

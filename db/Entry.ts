@@ -61,19 +61,4 @@ export default class Entry {
 
 		return term;
 	}
-
-	public static createFromParsedObject(entryAsParsedObject: {
-		[key: string]: any;
-	}) {
-		const entry = new Entry(
-			entryAsParsedObject.term,
-			entryAsParsedObject.translation
-		);
-		for (let property in entryAsParsedObject) {
-			if (property !== "term" && property !== "translation") {
-				entry[property] = entryAsParsedObject[property];
-			}
-		}
-		return entry;
-	}
 }

@@ -23,8 +23,7 @@ export default class WordToJsonConverter {
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 
-		dotenv.config({ path: ".env.test" });
-		// require("dotenv").config({ path: ".test.env" });
+		dotenv.config();
 
 		const docxFiles: { [key: string]: string | undefined } = {
 			English: process.env.DOCX_PATH_ENGLISH,

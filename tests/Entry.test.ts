@@ -1,6 +1,5 @@
 import faker from "faker";
 import Entry from "../db/Entry";
-import JsonManager from "../db/JsonManager";
 
 describe("Entry", () => {
 	describe("Constructor", () => {
@@ -12,7 +11,7 @@ describe("Entry", () => {
 			translation = faker.lorem.word();
 		});
 
-		test("2 required arguments >>> 2 properties", () => {
+		test("2 required args >>> 2 properties", () => {
 			const entry = new Entry(term, translation);
 			expect(entry.term).toBe(term);
 			expect(entry.translation).toBe(translation);
@@ -20,7 +19,7 @@ describe("Entry", () => {
 			expect(entry.note).toBeUndefined();
 		});
 
-		test("2 required arguments and 2 non-empty arguments >>> 4 properties", () => {
+		test("2 required args and 2 non-empty args >>> 4 properties populated", () => {
 			const entry = new Entry(
 				term,
 				translation,
@@ -33,7 +32,7 @@ describe("Entry", () => {
 			expect(entry.note).toBe(entry.note);
 		});
 
-		test("Empty strings as `definition` and `note` >>> no properties", () => {
+		test("Empty strings in definition and note >>> no definition, no note", () => {
 			const entry = new Entry(term, translation, "", "");
 			expect(entry.term).toBe(term);
 			expect(entry.translation).toBe(translation);
@@ -41,13 +40,13 @@ describe("Entry", () => {
 			expect(entry.note).toBeUndefined();
 		});
 
-		test("`•` in `definition` >>> no `•` in definition", () => {
+		test("`•` in definition >>> symbol removed from definition", () => {
 			const definition = "• This is a definition.";
 			const entry = new Entry(term, translation, definition);
 			expect(entry.definition).not.toContain("•");
 		});
 
-		test("`»` in `note` >>> no `»` in note", () => {
+		test("`»` in `note` >>> symbol removed from note", () => {
 			const note = "» This is a note.";
 			const entry = new Entry(term, translation, "", note);
 			expect(entry.note).not.toContain("»");
@@ -72,73 +71,6 @@ describe("Entry", () => {
 		test("Slug: Superscript last number as normal number", () => {
 			const entry = new Entry("hello³", "This is a translation");
 			expect(entry.slug).toBe("hello3");
-		});
-	});
-
-	describe("Creation from object parsed from JSON", () => {
-		let entry: Entry;
-
-		beforeAll(() => {
-			const summary = JsonManager.retrieveSummaryOfEntries("English");
-			const randomJsonFile =
-				summary[Math.floor(Math.random() * summary.length)];
-			const parsedObject = JsonManager.retrieveEntryAsParsedObject(
-				"English",
-				randomJsonFile + ".json"
-			);
-			entry = Entry.createFromParsedObject(parsedObject);
-		});
-
-		test("Entry has term, translation and slug", () => {
-			expect(entry).toHaveProperty("term");
-			expect(entry).toHaveProperty("translation");
-			expect(entry).toHaveProperty("slug");
-		});
-
-		test("Entry's definition and note (if any) are strings", () => {
-			const definitionAndNote = [entry.definition, entry.note];
-
-			for (let field of definitionAndNote) {
-				if (field !== undefined) {
-					expect(typeof field).toBe("string");
-				}
-			}
-		});
-
-		test("Entry's basic link fields (if any) are `string[]`", () => {
-			const basicLinkFields = [
-				entry.similarTo,
-				entry.tantamountTo,
-				entry.differentFrom,
-				entry.derivedFrom,
-				entry.derivedInto,
-				entry.reference
-			];
-
-			for (let field of basicLinkFields) {
-				if (field !== undefined) {
-					expect(field).toBeInstanceOf(Array);
-				}
-			}
-		});
-
-		test("Entry's complex link fields (if any) are `{ contents: string[] }[]`", () => {
-			const complexLinkFields = [entry.classifiedUnder, entry.classifiedInto];
-
-			for (let field of complexLinkFields) {
-				if (field !== undefined) {
-					expect(field).toBeInstanceOf(Array);
-					expect(typeof field).toBe("object");
-
-					for (let object of field) {
-						expect(object).toHaveProperty("contents");
-						expect(object["contents"]).toBeInstanceOf(Array);
-						for (let string of object["contents"]) {
-							expect(typeof string).toBe("string");
-						}
-					}
-				}
-			}
 		});
 	});
 });
