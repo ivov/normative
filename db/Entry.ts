@@ -49,7 +49,7 @@ export default class Entry {
 	}
 
 	@enumerable(false)
-	buildSlug(term: string): string {
+	private buildSlug(term: string): string {
 		term = term.replace(/<i>|<\/i>|\.|:|\//g, ""); // chars disallowed in a filename
 		term = term.replace("&apos;", "'");
 

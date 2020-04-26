@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "tsc && node build/main.js",
-		"test": "jest --verbose --silent"
+		"test": "jest --verbose --silent --maxWorkers=4"
 	},
 	"keywords": [],
 	"author": "",
@@ -22,7 +22,9 @@
 	},
 	"devDependencies": {
 		"@types/cheerio": "^0.22.17",
+		"@types/faker": "^4.1.11",
 		"@types/jest": "^25.2.1",
+		"faker": "^4.1.0",
 		"jest": "^25.4.0",
 		"ts-jest": "^25.4.0",
 		"typescript": "^3.8.3"

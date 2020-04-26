@@ -53,8 +53,8 @@ export default class FirestoreManager {
 		TerminalLogger.logUploadedSummary(language);
 	}
 
-	/**Deletes all docs (including summary) for a given language from Firestore.*/
-	/* See: https://firebase.google.com/docs/firestore/manage-data/delete-data */
+	/**Deletes all docs (including summary) for a given language from Firestore.
+	See: https://firebase.google.com/docs/firestore/manage-data/delete-data */
 	public async deleteFromFirestore(
 		language: AvailableLanguages
 	): Promise<void> {
