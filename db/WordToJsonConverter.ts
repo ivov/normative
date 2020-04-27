@@ -11,9 +11,8 @@ import {
 import Entry from "./Entry";
 import TerminalLogger from "../logging/TerminalLogger";
 import JsonManager from "./JsonManager";
-import path from "path";
 
-/** Responsible for converting the entries in a DOCX file into an HTML string and it into multiple JSON files.*/
+/** Responsible for converting the entries in a DOCX file into an HTML string and it into multiple JSON files. Requires a language: "English" or "Spanish". The filepath retrieved from an environment variable (`.env` or `.test.env`) based on the selected language.*/
 export default class WordToJsonConverter {
 	public language: AvailableLanguages;
 	public filepath: string;

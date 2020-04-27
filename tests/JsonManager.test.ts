@@ -34,7 +34,7 @@ describe("JsonManager", () => {
 		});
 	});
 
-	describe("Convert JSON to entry", () => {
+	describe("Convert random JSON file to entry", () => {
 		let entry: Entry;
 
 		beforeAll(() => {

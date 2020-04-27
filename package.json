@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "tsc && node build/main.js",
-		"test": "jest --verbose --maxWorkers=4"
+		"test": "jest --verbose --maxWorkers=4 --silent"
 	},
 	"keywords": [],
 	"author": "",
