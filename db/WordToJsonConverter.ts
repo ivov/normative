@@ -264,6 +264,8 @@ export default class WordToJsonConverter {
 						break;
 				}
 			}
+		} else {
+			throw new Error("Unrecognized element type, neither 'text' nor 'tag'.");
 		}
 
 		return text;

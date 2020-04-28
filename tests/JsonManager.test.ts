@@ -3,6 +3,7 @@ import fs from "fs";
 import JsonManager from "../db/JsonManager";
 import Entry from "../db/Entry";
 import WordToJsonConverter from "../db/WordToJsonConverter";
+import { promisify } from "util";
 
 describe("JsonManager", () => {
 	test("should get all the JSON filenames", async () => {
@@ -24,94 +25,124 @@ describe("JsonManager", () => {
 	});
 
 	test("should get a summary of entries that is an array of strings", () => {
-		const summary = JsonManager.getSummaryOfEntries("English");
-		expect(summary).toBeInstanceOf(Array);
-		for (let entry of summary) {
-			expect(typeof entry).toBe("string");
+		const path = "db/json/English/!allEntriesInEnglish.json";
+
+		if (fs.existsSync(path)) {
+			const summary = JsonManager.getSummaryOfEntries("English");
+			expect(summary).toBeInstanceOf(Array);
+			for (let entry of summary) {
+				expect(typeof entry).toBe("string");
+			}
+		} else {
+			expect(() => JsonManager.getSummaryOfEntries("English")).toThrow();
 		}
 	});
 
+	test("should fail at getting the summary of entries if it does not exist", async () => {
+		const rename = promisify(fs.rename);
+		await rename(
+			"db/json/English/!allEntriesInEnglish.json",
+			"db/json/!allEntriesInEnglish.json"
+		); // put elsewhere
+
+		expect(() => JsonManager.getSummaryOfEntries("English")).toThrow();
+
+		await rename(
+			"db/json/!allEntriesInEnglish.json",
+			"db/json/English/!allEntriesInEnglish.json"
+		); // put back
+	});
+
 	describe("Should convert a random JSON file into an entry", () => {
-		let entry: Entry;
+		const path = `db/json/English/!allEntriesInEnglish.json`;
 
-		beforeAll(() => {
-			const summary = JsonManager.getSummaryOfEntries("English");
-			const randomJsonFile =
-				summary[Math.floor(Math.random() * summary.length)];
-			entry = JsonManager.convertJsonToEntry(
-				"English",
-				randomJsonFile + ".json"
-			);
-		});
+		if (fs.existsSync(path)) {
+			let entry: Entry;
 
-		test("where term, translation and slug exist and are strings", () => {
-			expect(entry).toHaveProperty("term");
-			expect(entry).toHaveProperty("translation");
-			expect(entry).toHaveProperty("slug");
-			expect(typeof entry.term).toBe("string");
-			expect(typeof entry.translation).toBe("string");
-			expect(typeof entry.slug).toBe("string");
-		});
+			beforeAll(() => {
+				const summary = JsonManager.getSummaryOfEntries("English");
+				const randomJsonFile =
+					summary[Math.floor(Math.random() * summary.length)];
+				entry = JsonManager.convertJsonToEntry(
+					"English",
+					randomJsonFile + ".json"
+				);
+			});
 
-		test("where definition and note (if any) are strings", () => {
-			const definitionAndNote = [entry.definition, entry.note];
+			test("where term, translation and slug exist and are strings", () => {
+				expect(entry).toHaveProperty("term");
+				expect(entry).toHaveProperty("translation");
+				expect(entry).toHaveProperty("slug");
+				expect(typeof entry.term).toBe("string");
+				expect(typeof entry.translation).toBe("string");
+				expect(typeof entry.slug).toBe("string");
+			});
 
-			for (let field of definitionAndNote) {
-				if (field !== undefined) {
-					expect(typeof field).toBe("string");
-				}
-			}
-		});
+			test("where definition and note (if any) are strings", () => {
+				const definitionAndNote = [entry.definition, entry.note];
 
-		test("where each basic link field (if any) is an array of strings", () => {
-			const basicLinkFields = [
-				entry.similarTo,
-				entry.tantamountTo,
-				entry.differentFrom,
-				entry.derivedFrom,
-				entry.derivedInto,
-				entry.reference
-			];
-
-			for (let field of basicLinkFields) {
-				if (field !== undefined) {
-					expect(field).toBeInstanceOf(Array);
-					for (let string of field) {
-						expect(typeof string).toBe("string");
+				for (let field of definitionAndNote) {
+					if (field !== undefined) {
+						expect(typeof field).toBe("string");
 					}
 				}
-			}
-		});
+			});
 
-		test("where each complex link field (if any) has the structure `{ contents: string[] }[]`", () => {
-			const complexLinkFields = [entry.classifiedUnder, entry.classifiedInto];
+			test("where each basic link field (if any) is an array of strings", () => {
+				const basicLinkFields = [
+					entry.similarTo,
+					entry.tantamountTo,
+					entry.differentFrom,
+					entry.derivedFrom,
+					entry.derivedInto,
+					entry.reference
+				];
 
-			for (let field of complexLinkFields) {
-				if (field !== undefined) {
-					expect(field).toBeInstanceOf(Array);
-					expect(typeof field).toBe("object");
-
-					for (let object of field) {
-						expect(object).toHaveProperty("contents");
-						expect(object["contents"]).toBeInstanceOf(Array);
-						for (let string of object["contents"]) {
+				for (let field of basicLinkFields) {
+					if (field !== undefined) {
+						expect(field).toBeInstanceOf(Array);
+						for (let string of field) {
 							expect(typeof string).toBe("string");
 						}
 					}
 				}
-			}
-		});
+			});
+
+			test("where each complex link field (if any) has the structure `{ contents: string[] }[]`", () => {
+				const complexLinkFields = [entry.classifiedUnder, entry.classifiedInto];
+
+				for (let field of complexLinkFields) {
+					if (field !== undefined) {
+						expect(field).toBeInstanceOf(Array);
+						expect(typeof field).toBe("object");
+
+						for (let object of field) {
+							expect(object).toHaveProperty("contents");
+							expect(object["contents"]).toBeInstanceOf(Array);
+							for (let string of object["contents"]) {
+								expect(typeof string).toBe("string");
+							}
+						}
+					}
+				}
+			});
+		}
 	});
 
-	test("should delete all JSON files", async () => {
-		await JsonManager.deleteAllJsonFiles("English");
-		const filenames = await JsonManager.getAllJsonFilenames("English");
-		expect(filenames.length).toBe(0);
-		expect(JsonManager.deleteAllJsonFiles("English")).rejects.toThrow();
+	// test("should delete all JSON files", async () => {
+	// 	const filenames = await JsonManager.getAllJsonFilenames("English");
 
-		// cleanup: recreate all deleted JSON files
-		const converter = new WordToJsonConverter("English");
-		await converter.convertDocxToHtml();
-		converter.convertHtmltoJson();
-	});
+	// 	if (filenames.length > 0) {
+	// 		await JsonManager.deleteAllJsonFiles("English");
+	// 		const newFilenames = await JsonManager.getAllJsonFilenames("English");
+
+	// 		expect(newFilenames.length).toBe(0);
+	// 		expect(JsonManager.deleteAllJsonFiles("English")).rejects.toThrow();
+
+	// 		// cleanup: recreate all deleted JSON files
+	// 		const converter = new WordToJsonConverter("English");
+	// 		await converter.convertDocxToHtml();
+	// 		converter.convertHtmltoJson();
+	// 	}
+	// });
 });

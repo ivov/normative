@@ -3,6 +3,8 @@ module.exports = {
 	transform: {
 		"^.+\\.ts$": "ts-jest"
 	},
+	// collectCoverage: true,
+	// collectCoverageFrom: ["db/**/*.ts"],
 	testEnvironment: "node",
 	globals: {
 		"ts-jest": {

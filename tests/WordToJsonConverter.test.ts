@@ -1,44 +1,54 @@
 import fs from "fs";
 import cheerio from "cheerio";
-import dotenv from "dotenv";
-import { mocked } from "ts-jest/utils";
+import { promisify } from "util";
 import WordToJsonConverter from "../db/WordToJsonConverter";
 import JsonManager from "../db/JsonManager";
 
 describe("WordToJsonConverter", () => {
-	let engConverter: WordToJsonConverter;
-	let spaConverter: WordToJsonConverter;
-
-	beforeAll(() => {
-		engConverter = new WordToJsonConverter("English");
-		spaConverter = new WordToJsonConverter("Spanish");
-	});
-
 	describe("Constructor", () => {
-		// test("should fail when the dotenv file does not exist", () => {
-		// 	jest.mock("fs");
-		// 	const mockedFs = mocked(fs, true);
-		// 	mockedFs.existsSync.mockReturnValue(false);
+		const rename = promisify(fs.rename);
 
-		// 	expect(() => new WordToJsonConverter("English")).toThrow();
-		// });
+		test("should fail when the dotenv file does not exist", async () => {
+			await rename(".env", "db/.env"); // put elsewhere
 
-		test("should set the language when given 'English' or 'Spanish'", () => {
-			expect(engConverter.language).toBe("English");
-			expect(spaConverter.language).toBe("Spanish");
+			expect(() => new WordToJsonConverter("English")).toThrow();
+
+			await rename("db/.env", ".env"); // put back
 		});
 
-		test("should set the filepath per env var when given 'English' or 'Spanish'", () => {
+		test("should fail when the dotenv file has no DOCX file path", async () => {
+			const writeFile = promisify(fs.writeFile);
+			const deleteFile = promisify(fs.unlink);
+
+			await rename(".env", "db/.env"); // put elsewhere
+			await writeFile(".env", ""); // create empty
+
+			expect(() => new WordToJsonConverter("English")).toThrow();
+
+			await deleteFile(".env"); // delete empty
+			await rename("db/.env", ".env"); // put back
+		});
+
+		test("should set the language per arg and filepath per env var", () => {
+			const engConverter = new WordToJsonConverter("English");
+			const spaConverter = new WordToJsonConverter("Spanish");
+
+			expect(engConverter.language).toBe("English");
+			expect(spaConverter.language).toBe("Spanish");
+
 			expect(engConverter.filepath).toBe(process.env.DOCX_PATH_ENGLISH);
 			expect(spaConverter.filepath).toBe(process.env.DOCX_PATH_SPANISH);
 		});
 
 		test("should throw error when the filepath set in env var does not exist", () => {
-			process.env.DOCX_PATH_ENGLISH = "./this/is/a/non/existing/path";
-			process.env.DOCX_PATH_SPANISH = "./this/is/a/non/existing/path";
+			process.env.DOCX_PATH_ENGLISH = "./this/is/a/non/existing/path"; // break
+			process.env.DOCX_PATH_SPANISH = "./this/is/a/non/existing/path"; // break
 
 			expect(() => new WordToJsonConverter("English")).toThrow();
 			expect(() => new WordToJsonConverter("Spanish")).toThrow();
+
+			process.env.DOCX_PATH_ENGLISH = "db/docx/sample_eng.docx"; // fix
+			process.env.DOCX_PATH_SPANISH = "db/docx/sample_spa.docx"; // fix
 		});
 	});
 
@@ -163,8 +173,9 @@ describe("WordToJsonConverter", () => {
 		});
 
 		test("should produce JSON entries equal in number to DOCX entries", async () => {
-			const getCheerioResult = async (language: AvailableLanguages) => {
-				const converter = language === "English" ? engConverter : spaConverter;
+			const converter = new WordToJsonConverter("English");
+
+			const getCheerioResult = async () => {
 				await converter.convertDocxToHtml();
 				const $ = cheerio.load(converter.htmlString);
 				return Array.from($("p"));
@@ -182,13 +193,9 @@ describe("WordToJsonConverter", () => {
 				return summaryOfEntries;
 			};
 
-			const engCheerioResult = await getCheerioResult("English");
-			const engSummary = makeSummary(engConverter, engCheerioResult);
+			const engCheerioResult = await getCheerioResult();
+			const engSummary = makeSummary(converter, engCheerioResult);
 			expect(engCheerioResult.length).toEqual(engSummary.length);
-
-			const spaCheerioResult = await getCheerioResult("Spanish");
-			const spaSummary = makeSummary(spaConverter, spaCheerioResult);
-			expect(spaCheerioResult.length).toEqual(spaSummary.length);
 		});
 	});
 });

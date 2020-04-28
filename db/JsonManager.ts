@@ -1,19 +1,16 @@
 import fs from "fs";
+import { promisify } from "util";
 import stringify from "json-stringify-pretty-compact";
 import TerminalLogger from "../logging/TerminalLogger";
 import Entry from "./Entry";
 
 /**Responsible for reading and deleting JSON files.*/
 export default class JsonManager {
-	/**Returns a resolved Promise of all JSON filenames for a language, with the summary at the zeroth index.*/
-	public static getAllJsonFilenames(
-		language: AvailableLanguages
-	): Promise<string[]> {
-		return new Promise((resolve, reject) => {
-			return fs.readdir(`db/json/${language}/`, (error, filenames: string[]) =>
-				resolve(filenames.filter(filename => filename !== ".gitignore"))
-			);
-		});
+	/**Returns all JSON filenames for a language, including the summary at the zeroth index.*/
+	public static async getAllJsonFilenames(language: AvailableLanguages) {
+		const readdir = promisify(fs.readdir);
+		const filenames = await readdir(`db/json/${language}/`);
+		return filenames.filter(filename => filename !== ".gitignore");
 	}
 
 	/**Saves a custom entry as a JSON file.*/
@@ -40,9 +37,11 @@ export default class JsonManager {
 
 	/**Returns a summary from a JSON file.*/
 	public static getSummaryOfEntries(language: AvailableLanguages): string[] {
-		const data = fs.readFileSync(
-			`db/json/${language}/!allEntriesIn${language}.json`
-		);
+		const path = `db/json/${language}/!allEntriesIn${language}.json`;
+
+		if (!fs.existsSync(path)) throw Error("No summary exists for: " + language);
+
+		const data = fs.readFileSync(path);
 		return JSON.parse(data.toString());
 	}
 
