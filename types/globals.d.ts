@@ -2,7 +2,10 @@ declare module "mammoth";
 
 type AvailableLanguages = "English" | "Spanish";
 
-type MammothResult = { value: string; messages: string[] };
+type MammothResult = {
+	value: string;
+	messages: { type: string; message: string }[];
+};
 
 type CheerioResult = { "0": { type: string; name: string; children: [] } };
 

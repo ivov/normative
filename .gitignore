@@ -1,7 +1,9 @@
 /node_modules
 /build
-/db/json/English/
-/db/json/Spanish/
+/db/json/English/*.json
+/db/json/Spanish/*.json
 *.docx
+!/db/docx/testing/*.docx
 *.env
 notes.md
+/coverage

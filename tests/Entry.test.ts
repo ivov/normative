@@ -11,7 +11,7 @@ describe("Entry", () => {
 			translation = faker.lorem.word();
 		});
 
-		test("2 required args >>> 2 properties", () => {
+		test("should have two properties when given arguments for term and translation", () => {
 			const entry = new Entry(term, translation);
 			expect(entry.term).toBe(term);
 			expect(entry.translation).toBe(translation);
@@ -19,7 +19,7 @@ describe("Entry", () => {
 			expect(entry.note).toBeUndefined();
 		});
 
-		test("2 required args and 2 non-empty args >>> 4 properties populated", () => {
+		test("should have four properties when given four non-empty strings", () => {
 			const entry = new Entry(
 				term,
 				translation,
@@ -32,7 +32,7 @@ describe("Entry", () => {
 			expect(entry.note).toBe(entry.note);
 		});
 
-		test("Empty strings in definition and note >>> no definition, no note", () => {
+		test("should have no note and no definition when given two empty strings for them", () => {
 			const entry = new Entry(term, translation, "", "");
 			expect(entry.term).toBe(term);
 			expect(entry.translation).toBe(translation);
@@ -40,13 +40,13 @@ describe("Entry", () => {
 			expect(entry.note).toBeUndefined();
 		});
 
-		test("`•` in definition >>> symbol removed from definition", () => {
+		test("should remove the '•' symbol from definition", () => {
 			const definition = "• This is a definition.";
 			const entry = new Entry(term, translation, definition);
 			expect(entry.definition).not.toContain("•");
 		});
 
-		test("`»` in `note` >>> symbol removed from note", () => {
+		test("should remove the '»' symbol from note", () => {
 			const note = "» This is a note.";
 			const entry = new Entry(term, translation, "", note);
 			expect(entry.note).not.toContain("»");
@@ -54,7 +54,7 @@ describe("Entry", () => {
 	});
 
 	describe("Slug", () => {
-		test("Slug: Disallowed characters removed", () => {
+		test("should have any disallowed characters removed from slug", () => {
 			const entry = new Entry(
 				"<i>sine : q/ua - non</i>",
 				"This is a translation"
@@ -62,13 +62,13 @@ describe("Entry", () => {
 			expect(entry.slug).not.toMatch(/<i>|<\/i>|\.|:|\//);
 		});
 
-		test("Slug: Encoded apostrophe decoded", () => {
+		test("should have any apostrophe decoded in slug", () => {
 			const entry = new Entry("ben &apos; jerry", "This is a translation");
 			expect(entry.slug).not.toContain("&apos;");
 			expect(entry.slug).toContain("'");
 		});
 
-		test("Slug: Superscript last number as normal number", () => {
+		test("should have any superscript last number as a normal number in slug", () => {
 			const entry = new Entry("hello³", "This is a translation");
 			expect(entry.slug).toBe("hello3");
 		});

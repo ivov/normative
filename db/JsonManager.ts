@@ -11,7 +11,7 @@ export default class JsonManager {
 	): Promise<string[]> {
 		return new Promise((resolve, reject) => {
 			return fs.readdir(`db/json/${language}/`, (error, filenames: string[]) =>
-				resolve(filenames)
+				resolve(filenames.filter(filename => filename !== ".gitignore"))
 			);
 		});
 	}
@@ -64,17 +64,21 @@ export default class JsonManager {
 	}
 
 	/**Deletes all JSON entries for a given language in its directory.*/
-	static async deleteJsonEntries(language: AvailableLanguages): Promise<void> {
-		console.log("Deleting current JSON entries...");
+	static async deleteAllJsonFiles(language: AvailableLanguages): Promise<void> {
+		console.log(`Deleting JSON entries for ${language}...`);
 
 		const filenames = await JsonManager.getAllJsonFilenames(language);
-		let path = `db/json/${language}/`;
+		const path = `db/json/${language}/`;
+
+		if (filenames.length === 0)
+			throw Error(`No JSON files in ${language} to delete.`);
 
 		filenames.forEach(filename => {
 			fs.unlink(path + filename, error => {
-				if (error) throw error;
+				if (error) throw Error("Failed to delete: " + path + filename);
 			});
 		});
+
 		TerminalLogger.logDeletedJsonFiles(language);
 	}
 }

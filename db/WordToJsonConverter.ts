@@ -12,32 +12,38 @@ import Entry from "./Entry";
 import TerminalLogger from "../logging/TerminalLogger";
 import JsonManager from "./JsonManager";
 
-/** Responsible for converting the entries in a DOCX file into an HTML string and it into multiple JSON files. Requires a language: "English" or "Spanish". The filepath retrieved from an environment variable (`.env` or `.test.env`) based on the selected language.*/
+/** Responsible for converting the entries in a DOCX file into an HTML string and it into multiple JSON files.*/
 export default class WordToJsonConverter {
 	public language: AvailableLanguages;
 	public filepath: string;
 	public htmlString: string;
 	private htmlEncoder: any = new XmlEntities(); // this encoder preserves accents
 
-	constructor(language: AvailableLanguages) {
+	constructor(language: AvailableLanguages, specialDocxFilePath?: string) {
 		this.language = language;
+		this.filepath = specialDocxFilePath
+			? specialDocxFilePath
+			: this.getFilePathFromDotEnv(language);
+	}
 
+	private getFilePathFromDotEnv(language: AvailableLanguages): string {
 		dotenv.config();
 
-		const docxFiles: { [key: string]: string | undefined } = {
-			English: process.env.DOCX_PATH_ENGLISH,
-			Spanish: process.env.DOCX_PATH_SPANISH
-		};
+		if (!fs.existsSync(".env"))
+			throw Error("No dotenv file found at root dir.");
 
-		const filepath = docxFiles[language];
+		if (!process.env.DOCX_PATH_ENGLISH || !process.env.DOCX_PATH_SPANISH)
+			throw Error("DOCX file path missing from dotenv file.");
 
-		if (typeof filepath === "undefined")
-			throw Error("No DOCX file path provided.");
+		const filepath =
+			language === "English"
+				? process.env.DOCX_PATH_ENGLISH
+				: process.env.DOCX_PATH_SPANISH;
 
 		if (!fs.existsSync(filepath))
-			throw Error("Wrong DOCX file path: " + filepath);
+			throw Error("DOCX file path in dotenv file does not exist.");
 
-		this.filepath = filepath;
+		return filepath;
 	}
 
 	/**Converts a DOCX file into an HTML string and stores it in the `htmlString` class field. Current JSON entries are deleted.*/
@@ -61,49 +67,59 @@ export default class WordToJsonConverter {
 		);
 
 		if (result.messages.length > 0)
-			console.log("Mammoth Messages:\n" + result.messages);
+			throw Error(
+				"Mammoth messages:\n" +
+					result.messages
+						.map(obj => `Type: ${obj.type} | Message: ${obj.message}`)
+						.join("\n")
+			);
 
 		this.htmlString = result.value.replace(
 			/# Classified into:/g, // make symbol unique to make later recognition easier
-			"§ Classified into:"
+			"§ Classified into:" // because `Classified under` uses # as well
 		);
 
 		TerminalLogger.logConvertedDocxToHtml();
 	}
 
 	/**Converts a long HTML string into multiple entries and persists them as JSON files. The intermediate step between HTML and JSON is `cheerioResult`. `cheerioResult` is an array of entries of type `CheerioElement` containing the properties `type`, `name` and `children`. An entry's `children` are its segments of type `CheerioElement` (`term`, `translation`, `definition`, etc.). Its segments contain subsegments of type `CheerioElement`, either `text` with plain text in `data` or `tag` (emphasis or italics tags) containing plain text in `data`.
-	```
-	Example of `cheerioResult`:
-	[
-		{
-			type: "tag",
-			name: "p", ← entry
-			<snip>
-			children: [
-				{
-					type: "tag",
-					name: "term", ← entry segment
-					<snip>
-					children: [
-						{
-							type: "text",
-							data: "lawyer", ← entry subsegment
-							<snip>
-						},
-						{
-							type: "tag",
-							name: "em",
-							data: "sine qua non", ← entry subsegment
-							<snip>
-						}
-					]
-				}
-			]
-		},
-		<snip: more entries>
-	]
-	```*/
-	public convertHtmltoJson() {
+	 * Example of `cheerioResult`:
+	 * ```
+	 * [
+	 *    {
+	 *       type: "tag",
+	 *       name: "p", ← entry
+	 *       ~snip~
+	 *       children: [
+	 *         {
+	 *           type: "tag",
+	 *           name: "term", ← entry segment
+	 *           ~ snip ~
+	 *           children: [
+	 *             {
+	 *                type: "text",
+	 *                data: "lawyer", ← entry subsegment
+	 *                ~ snip ~
+	 *             },
+	 *             {
+	 *                type: "tag",
+	 *                name: "em",
+	 *                data: "sine qua non", ← entry subsegment
+	 *                ~ snip ~
+	 *             }
+	 *           ]
+	 *         }
+	 *       ]
+	 *    },
+	 *    ~ snip: more entries ~
+	 * ]
+	 *
+	 *
+	 *
+	 *
+	 *
+	 *```*/
+	public convertHtmltoJson(): void {
 		console.log("Converting HTML to JSON...");
 
 		const $ = cheerio.load(this.htmlString);

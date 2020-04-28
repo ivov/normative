@@ -2,10 +2,10 @@
 	"name": "normative",
 	"version": "1.0.0",
 	"description": "Iván Ovejero",
-	"main": "index.js",
+	"main": "main.js",
 	"scripts": {
 		"start": "tsc && node build/main.js",
-		"test": "jest --verbose --maxWorkers=4 --silent"
+		"test": "jest --verbose --maxWorkers=1 --coverage --silent"
 	},
 	"keywords": [],
 	"author": "",
