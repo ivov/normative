@@ -1,4 +1,3 @@
-// Constants used by `WordToJsonConverter`
 export const SUPERSCRIPT = ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"];
 
 export const LOOSE_FIELD_SYMBOLS: {

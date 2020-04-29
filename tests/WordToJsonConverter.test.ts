@@ -40,7 +40,7 @@ describe("WordToJsonConverter", () => {
 			expect(spaConverter.filepath).toBe(process.env.DOCX_PATH_SPANISH);
 		});
 
-		test("should throw error when the filepath set in env var does not exist", () => {
+		test("should throw error when filepath set in env var does not exist", () => {
 			process.env.DOCX_PATH_ENGLISH = "./this/is/a/non/existing/path"; // break
 			process.env.DOCX_PATH_SPANISH = "./this/is/a/non/existing/path"; // break
 
@@ -106,14 +106,22 @@ describe("WordToJsonConverter", () => {
 			expect(myConverter.convertDocxToHtml()).rejects.toThrow(); // `rejects` because `convertDocxToHtml` is async
 		});
 
-		test("should convert the all-variant DOCX entry into one that matches the JSON sample", async () => {
+		test("should fail with a styled line break", async () => {
+			const myConverter = new WordToJsonConverter(
+				"English",
+				"db/docx/testing/eng_styled_line_break.docx"
+			);
+			await myConverter.convertDocxToHtml();
+			expect(() => myConverter.convertHtmltoJson()).toThrow();
+		});
+
+		test("should properly convert the all-variant DOCX entry", async () => {
 			process.env.DOCX_PATH_SPANISH = "db/docx/testing/all_variants_unit.docx";
 
 			// Hard-coded values because it is a fixed sample entry with variants of all fields.
 			const result = {
 				term: "aaa",
-				translation:
-					"traducción &lt;contexto&gt; | traducción &lt;contexto&gt;",
+				translation: "traducción <contexto> | traducción <contexto>",
 				definition: "Definición.",
 				note: "Nota aclaratoria.",
 				slug: "aaa",
@@ -147,29 +155,22 @@ describe("WordToJsonConverter", () => {
 			expect(data).not.toBeUndefined();
 			expect(object).toEqual(result);
 
-			// cleanup: delete all-variant unit
+			// delete all-variant unit
 			fs.unlink(path, error => {
 				if (error) expect(() => fs.readFileSync(path)).toThrow(); // anon func to enable `path` arg
 			});
 		});
 
 		test("should produce JSON files larger than 0 bytes", async () => {
-			const getFileSize = (language: AvailableLanguages, filename: string) => {
-				const stats = fs.statSync(`db/json/${language}/` + filename);
+			const getFileSize = (filename: string) => {
+				const stats = fs.statSync(`db/json/English/` + filename);
 				return stats["size"]; // in bytes
 			};
 
-			const engJsonHelper = new JsonHelper("English");
-			const engFilenames = await engJsonHelper.getAllJsonFilenames();
-			engFilenames.forEach((filename: string) => {
-				const fileSize = getFileSize("English", filename);
-				expect(fileSize).toBeGreaterThan(0);
-			});
-
-			const spaJsonHelper = new JsonHelper("Spanish");
-			const spaFilenames = await spaJsonHelper.getAllJsonFilenames();
-			spaFilenames.forEach((filename: string) => {
-				const fileSize = getFileSize("Spanish", filename);
+			const jsonHelper = new JsonHelper("English");
+			const filenames = await jsonHelper.getAllJsonFilenames();
+			filenames.forEach((filename: string) => {
+				const fileSize = getFileSize(filename);
 				expect(fileSize).toBeGreaterThan(0);
 			});
 		});
@@ -183,7 +184,7 @@ describe("WordToJsonConverter", () => {
 				return Array.from($("p"));
 			};
 
-			const makeSummary = (
+			const makeAdHocSummary = (
 				converter: WordToJsonConverter,
 				cheerioResult: CheerioElement[]
 			) => {
@@ -195,9 +196,9 @@ describe("WordToJsonConverter", () => {
 				return summaryOfEntries;
 			};
 
-			const engCheerioResult = await getCheerioResult();
-			const engSummary = makeSummary(converter, engCheerioResult);
-			expect(engCheerioResult.length).toEqual(engSummary.length);
+			const cheerioResult = await getCheerioResult();
+			const summary = makeAdHocSummary(converter, cheerioResult);
+			expect(cheerioResult.length).toEqual(summary.length);
 		});
 	});
 });

@@ -11,7 +11,7 @@ describe("Entry", () => {
 			translation = faker.lorem.word();
 		});
 
-		test("should have two properties when given arguments for term and translation", () => {
+		test("should have two props when given args for term and translation", () => {
 			const entry = new Entry(term, translation);
 			expect(entry.term).toBe(term);
 			expect(entry.translation).toBe(translation);
@@ -32,7 +32,7 @@ describe("Entry", () => {
 			expect(entry.note).toBe(entry.note);
 		});
 
-		test("should have no note and no definition when given two empty strings for them", () => {
+		test("should have no note/definition when these are given empty strings", () => {
 			const entry = new Entry(term, translation, "", "");
 			expect(entry.term).toBe(term);
 			expect(entry.translation).toBe(translation);
@@ -62,11 +62,11 @@ describe("Entry", () => {
 			expect(entry.slug).not.toMatch(/<i>|<\/i>|\.|:|\//);
 		});
 
-		test("should have any apostrophe decoded in slug", () => {
-			const entry = new Entry("ben &apos; jerry", "This is a translation");
-			expect(entry.slug).not.toContain("&apos;");
-			expect(entry.slug).toContain("'");
-		});
+		// test("should have any apostrophe decoded in slug", () => {
+		// 	const entry = new Entry("ben &apos; jerry", "This is a translation");
+		// 	expect(entry.slug).not.toContain("&apos;");
+		// 	expect(entry.slug).toContain("'");
+		// });
 
 		test("should have any superscript last number as a normal number in slug", () => {
 			const entry = new Entry("hello³", "This is a translation");

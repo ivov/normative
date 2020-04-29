@@ -2,7 +2,7 @@ import fs from "fs";
 import mammoth from "mammoth";
 import cheerio from "cheerio";
 import dotenv from "dotenv";
-import { XmlEntities } from "html-entities";
+// import { XmlEntities } from "html-entities";
 import {
 	SUPERSCRIPT,
 	LOOSE_FIELD_SYMBOLS,
@@ -17,7 +17,7 @@ export default class WordToJsonConverter {
 	public language: AvailableLanguages;
 	public filepath: string;
 	public htmlString: string;
-	private htmlEncoder: any = new XmlEntities(); // This encoder preserves accents.
+	// private htmlEncoder: any = new XmlEntities(); // no need to encode for now
 	private dbLogger: DbLogger;
 	private jsonHelper: JsonHelper;
 
@@ -149,7 +149,7 @@ export default class WordToJsonConverter {
 			});
 
 			summaryOfEntries.push(entry.slug);
-			// break; // temp: show only one entry for debugging
+			// break; // temp, show only one entry for debugging
 		}
 
 		this.jsonHelper.saveSummaryAsJson(summaryOfEntries);
@@ -254,7 +254,8 @@ export default class WordToJsonConverter {
 			(element.type === "tag" && element.name === "sup")
 		) {
 			if (element.type === "text") {
-				text += this.htmlEncoder.encode(element.data);
+				// text += this.htmlEncoder.encode(element.data); // no need to encode for now
+				text += element.data;
 			} else if (element.type === "tag") {
 				const tagContent = element.children[0].data as string;
 				switch (element.name) {
@@ -267,19 +268,22 @@ export default class WordToJsonConverter {
 						else {
 							text += "<sup>" + tagContent + "</sup>";
 						}
+
 						break;
 					case "em":
 						text +=
 							"<i>" +
-							this.htmlEncoder.encode(element.children[0].data) +
+							// this.htmlEncoder.encode(element.children[0].data) + // no need to encode for now
+							element.children[0].data +
 							"</i>";
 						break;
 				}
 			}
 		} else {
-			throw Error("Unrecognized element type, neither 'text' nor 'tag'.");
+			throw Error(
+				"Unrecognized element type, neither 'text' nor 'tag'.\n Usually a mistakenly styled line break, e.g. <br> tagged with 'translation' or 'definition'."
+			);
 		}
-
 		return text;
 	}
 
@@ -297,17 +301,21 @@ export default class WordToJsonConverter {
 				buffer = []; // empty out buffer at `<br>` (line break)
 			} else if (
 				child.type === "text" ||
-				child.name === "sup" ||
-				child.name === "em"
+				(child.type === "tag" && child.name === "em") ||
+				(child.type === "tag" && child.name === "sup")
 			) {
 				if (child.data === " — ") continue; // ignore misc character in first line
 				if (child.data === "\t") continue; // ignore misc character in first line
+
 				let fieldText = this.extractText(child);
 				buffer.push(fieldText);
 			}
 		}
 
-		if (buffer.length > 0) looseFields.push(...buffer); // add last item in buffer, only item not ending in `<br>`
+		// add last item in buffer, only item not ending in `<br>`
+		if (buffer.length > 0) {
+			looseFields.push(buffer.join("").replace("\t", ""));
+		}
 
 		return looseFields;
 	}
@@ -338,9 +346,14 @@ export default class WordToJsonConverter {
 			if (isComplexLink(snippet)) complexLinkSnippets.push(snippet);
 		}
 
-		this.addBasicLinkFields(entry, basicLinkSnippets);
-		this.addReferenceField(entry, referenceTextSnippets);
-		this.addComplexLinkFields(entry, complexLinkSnippets);
+		if (basicLinkSnippets.length > 0)
+			this.addBasicLinkFields(entry, basicLinkSnippets);
+
+		if (referenceTextSnippets.length > 0)
+			this.addReferenceField(entry, referenceTextSnippets);
+
+		if (complexLinkSnippets.length > 0)
+			this.addComplexLinkFields(entry, complexLinkSnippets);
 	}
 
 	/** Adds each basic link field as an array of strings to the entry.*/

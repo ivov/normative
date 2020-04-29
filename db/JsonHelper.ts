@@ -55,7 +55,7 @@ export default class JsonHelper {
 			}
 		);
 
-		const path = `db/json/${this.language}/${title}.json`; // "!" to keep file up at the top
+		const path = `db/json/${this.language}/${title}.json`; // "!" to keep file at the top of the dir
 		fs.writeFileSync(path, allEntriesAsJsonString, "utf8");
 	}
 
@@ -101,9 +101,7 @@ export default class JsonHelper {
 			throw Error(`No JSON files in ${this.language} to delete.`);
 
 		filenames.forEach(filename => {
-			fs.unlink(path + filename, error => {
-				if (error) throw Error("Failed to delete: " + path + filename);
-			});
+			fs.unlinkSync(path + filename);
 		});
 
 		this.dbLogger.fullGreen(`Deleted all JSON files in ${this.language}`);

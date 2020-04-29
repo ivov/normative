@@ -49,10 +49,11 @@ export default class Entry {
 		this.slug = this.buildSlug(term);
 	}
 
+	// for use in filenames
 	@enumerable(false)
 	private buildSlug(term: string): string {
 		term = term.replace(/<i>|<\/i>|\.|:|\//g, ""); // chars disallowed in a filename
-		term = term.replace("&apos;", "'");
+		term = term.replace(/"/g, "'");
 
 		const lastCharacter = term.slice(-1);
 		if (SUPERSCRIPT.includes(lastCharacter)) {

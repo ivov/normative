@@ -1,8 +1,9 @@
 import faker from "faker";
 import fs from "fs";
+import { promisify } from "util";
 import JsonHelper from "../db/JsonHelper";
 import Entry from "../db/Entry";
-import { promisify } from "util";
+import WordToJsonConverter from "../db/WordToJsonConverter";
 
 describe("JsonHelper", () => {
 	const jsonHelper = new JsonHelper("English");
@@ -105,7 +106,7 @@ describe("JsonHelper", () => {
 				}
 			});
 
-			test("where each complex link field (if any) has the structure `{ contents: string[] }[]`", () => {
+			test("where each complex link field (if any) is properly structured", () => {
 				const complexLinkFields = [entry.classifiedUnder, entry.classifiedInto];
 
 				for (let field of complexLinkFields) {
@@ -126,20 +127,21 @@ describe("JsonHelper", () => {
 		}
 	});
 
-	// test("should delete all JSON files", async () => {
-	// 	const filenames = await JsonManager.getAllJsonFilenames("English");
+	test("should delete all JSON files", async () => {
+		const jsonHelper = new JsonHelper("English");
+		const filenames = await jsonHelper.getAllJsonFilenames();
 
-	// 	if (filenames.length > 0) {
-	// 		await JsonManager.deleteAllJsonFiles("English");
-	// 		const newFilenames = await JsonManager.getAllJsonFilenames("English");
+		if (filenames.length > 0) {
+			await jsonHelper.deleteAllJsonFiles();
+			const newFilenames = await jsonHelper.getAllJsonFilenames();
 
-	// 		expect(newFilenames.length).toBe(0);
-	// 		expect(JsonManager.deleteAllJsonFiles("English")).rejects.toThrow();
+			expect(newFilenames.length).toBe(0);
+			expect(jsonHelper.deleteAllJsonFiles()).rejects.toThrow();
 
-	// 		// cleanup: recreate all deleted JSON files
-	// 		const converter = new WordToJsonConverter("English");
-	// 		await converter.convertDocxToHtml();
-	// 		converter.convertHtmltoJson();
-	// 	}
-	// });
+			// recreate all deleted JSON files
+			const converter = new WordToJsonConverter("English");
+			await converter.convertDocxToHtml();
+			converter.convertHtmltoJson();
+		}
+	});
 });
