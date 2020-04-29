@@ -50,7 +50,11 @@ export default class FirestoreManager {
 				.doc(entry.slug)
 				.set({ ...entry }, { merge: true });
 
-			this.dbLogger.uploadedToFirestore(entry.slug);
+			this.dbLogger.uploadedEntry({
+				term: entry.term,
+				collection: db.collection(language + "-terms"),
+				db: "Firestore"
+			});
 		}
 
 		const summaryOfEntries = this.jsonHelper.getSummary();
@@ -60,7 +64,11 @@ export default class FirestoreManager {
 			.doc(language + "-summary")
 			.set({ ...summaryOfEntries });
 
-		this.dbLogger.uploadedSummaryToFirestore();
+		this.dbLogger.uploadedEntry({
+			term: _,
+			collection: db.collection("Summaries"),
+			db: "Firestore"
+		});
 	}
 
 	/**Deletes all docs (including summary) for a given language from Firestore.

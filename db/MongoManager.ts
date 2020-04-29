@@ -25,6 +25,8 @@ export default class MongoManager {
 		});
 		await this.client.connect();
 
+		this.dbLogger.fullGreen("Connected to MongoDB");
+
 		this.db = this.client.db("normative");
 		this.collection =
 			this.language === "English"
@@ -46,7 +48,12 @@ export default class MongoManager {
 		const object = jsonHelper.parseJsonIntoObject(filename);
 
 		await this.collection.insertOne(object);
-		this.dbLogger.uploadedEntryToMongo(object.term, this.collection.namespace);
+
+		this.dbLogger.uploadedEntry({
+			term: object.term,
+			collection: this.collection.namespace,
+			db: "MongoDB"
+		});
 	}
 
 	public async uploadAllJsonEntries() {
@@ -69,10 +76,11 @@ export default class MongoManager {
 
 		await this.collection.insertOne(object);
 
-		this.dbLogger.uploadedEntryToMongo(
-			`Summary of ${this.language} entries`,
-			this.collection.namespace
-		);
+		this.dbLogger.uploadedEntry({
+			term: object.term, // "!allEntriesInEnglish" or "!allEntriesInSpanish"
+			collection: this.collection.namespace,
+			db: "MongoDB"
+		});
 	}
 
 	public async getEntryDocument() {
@@ -84,6 +92,11 @@ export default class MongoManager {
 	}
 
 	public async getSummaryDocument() {
-		return await this.collection.findOne({ summary: { $exists: true } });
+		const specialTerm =
+			this.language === "English"
+				? "!allEntriesInEnglish"
+				: "!allEntriesInSpanish";
+
+		return await this.collection.findOne({ term: specialTerm });
 	}
 }

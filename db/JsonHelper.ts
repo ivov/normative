@@ -106,6 +106,6 @@ export default class JsonHelper {
 			});
 		});
 
-		this.dbLogger.deletedAllJsonFiles();
+		this.dbLogger.fullGreen(`Deleted all JSON files in ${this.language}`);
 	}
 }

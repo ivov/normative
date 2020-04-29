@@ -3,8 +3,6 @@ import chalk from "chalk";
 import cheerio from "cheerio";
 import { LOOSE_FIELD_STRINGS } from "./constants";
 import WordToJsonConverter from "./WordToJsonConverter";
-import JsonHelper from "./JsonHelper";
-import { file } from "@babel/types";
 
 /** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoManager`, and `FirestoreManager`.*/
 export default class DbLogger {
@@ -14,22 +12,12 @@ export default class DbLogger {
 		this.language = language;
 	}
 
-	public logError(errorMessage: string) {
+	public fullRed(errorMessage: string) {
 		console.log(chalk.keyword("red").inverse(errorMessage));
 	}
 
-	public convertedDocxToHtml(): void {
-		console.log(
-			chalk.keyword("green").inverse("Converted DOCX file to HTML string.\n")
-		);
-	}
-
-	public convertedHtmlToJson(numberOfEntries: number): void {
-		console.log(
-			chalk
-				.keyword("green")
-				.inverse(`Converted HTML string to ${numberOfEntries} JSON files.\n`)
-		);
+	public fullGreen(message: string) {
+		console.log(chalk.keyword("green").inverse(message + "\n"));
 	}
 
 	public savingJson({
@@ -50,50 +38,24 @@ export default class DbLogger {
 		);
 	}
 
-	savedJson(summaryOfEntries: string[]) {
+	public uploadedEntry({
+		term,
+		collection,
+		db
+	}: {
+		term: string;
+		collection: string;
+		db: string;
+	}) {
 		console.log(
-			chalk
-				.keyword("green")
-				.inverse(
-					`\nConverted ${summaryOfEntries.length} entries in ${this.language} from DOCX to JSON.`
-				)
+			`Uploaded ${chalk.bold(term)} to ${db} collection ${collection}`
 		);
 	}
 
-	public deletedAllJsonFiles() {
-		console.log(
-			chalk
-				.keyword("green")
-				.inverse(`Deleted all JSON files in ${this.language}.\n`)
+	public logEntry(filename: string) {
+		const object = JSON.parse(
+			fs.readFileSync(`db/json/${this.language}/${filename}`).toString()
 		);
-	}
-	public uploadedToFirestore(slug: string) {
-		console.log(
-			`Uploaded to Firestore ${this.language} collection: ` + chalk.bold(slug)
-		);
-	}
-
-	public uploadedSummaryToFirestore() {
-		console.log(
-			`Uploaded to Firestore Summaries collection: ` +
-				chalk.bold("Summary for " + this.language)
-		);
-	}
-
-	public uploadedEntryToMongo(slug: string, collection: string) {
-		console.log(
-			`Uploaded ${chalk.bold(slug)} to MongoDB collection ${chalk.bold(
-				collection
-			)}`
-		);
-	}
-
-	public showFullEntry(filename: string) {
-		// TODO: no need for entry?
-		// const entry = this.jsonHelper.convertJsonToEntry(filename);
-
-		const data = fs.readFileSync(`db/json/${this.language}/${filename}`);
-		const entry = JSON.parse(data.toString());
 
 		const decodeHtml = (html: string) => {
 			return html
@@ -105,22 +67,22 @@ export default class DbLogger {
 		// main fields
 		console.log(
 			"\n" +
-				chalk.keyword("white").inverse(entry.term) +
+				chalk.keyword("white").inverse(object.term) +
 				" --- " +
-				chalk.keyword("green").inverse(decodeHtml(entry.translation))
+				chalk.keyword("green").inverse(decodeHtml(object.translation))
 		);
-		if (entry.definition !== undefined) {
-			console.log(chalk.keyword("blue").inverse(entry.definition));
+		if (object.definition !== undefined) {
+			console.log(chalk.keyword("blue").inverse(object.definition));
 		}
-		if (entry.note !== undefined) {
-			console.log(chalk.green(entry.note));
+		if (object.note !== undefined) {
+			console.log(chalk.green(object.note));
 		}
 
 		// similarTo, separated from other basic link fields because of order
-		if (entry.similarTo !== undefined) {
+		if (object.similarTo !== undefined) {
 			console.log(
 				chalk.magenta(
-					LOOSE_FIELD_STRINGS.similarTo + ": " + entry.similarTo.join(" | ")
+					LOOSE_FIELD_STRINGS.similarTo + ": " + object.similarTo.join(" | ")
 				)
 			);
 		}
@@ -128,8 +90,8 @@ export default class DbLogger {
 		// complex link fields
 		const complexLinkFields = ["classifiedUnder", "classifiedInto"];
 		for (let field of complexLinkFields) {
-			if (entry[field] !== undefined) {
-				for (let line of entry[field] as { contents: string[] }[]) {
+			if (object[field] !== undefined) {
+				for (let line of object[field] as { contents: string[] }[]) {
 					console.log(
 						chalk.magenta(
 							LOOSE_FIELD_STRINGS[field] + ": " + line.contents.join(" | ")
@@ -147,19 +109,19 @@ export default class DbLogger {
 			"derivedInto"
 		];
 		for (let field of basicLinkFieldsMinusSimilarTo) {
-			if (entry[field] !== undefined) {
+			if (object[field] !== undefined) {
 				console.log(
 					chalk.magenta(
 						LOOSE_FIELD_STRINGS[field] +
 							": " +
-							(entry[field] as string[]).join(" | ")
+							(object[field] as string[]).join(" | ")
 					)
 				);
 			}
 		}
 
-		if (entry.reference !== undefined) {
-			for (let line of entry.reference) {
+		if (object.reference !== undefined) {
+			for (let line of object.reference) {
 				console.log("+ " + line);
 			}
 		}
@@ -173,12 +135,8 @@ export default class DbLogger {
 		const $ = cheerio.load(converter.htmlString);
 		const cheerioResult = $("p");
 
-		console.log(
-			chalk
-				.keyword("green")
-				.inverse(
-					`Number of DOC/HTML entries in ${converter.language}: ${cheerioResult.length}\n`
-				)
+		this.fullGreen(
+			`Number of DOC/HTML entries in ${converter.language}: ${cheerioResult.length}`
 		);
 	}
 }

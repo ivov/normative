@@ -93,7 +93,7 @@ export default class WordToJsonConverter {
 			"§ Classified into:" // because `Classified under` uses # as well
 		);
 
-		this.dbLogger.convertedDocxToHtml();
+		this.dbLogger.fullGreen("Converted DOCX file to HTML string.");
 	}
 
 	/**Converts a long HTML string into multiple entries and persists them as JSON files. The intermediate step between HTML and JSON is `cheerioResult`. `cheerioResult` is an array of entries of type `CheerioElement` containing the properties `type`, `name` and `children`. An entry's `children` are its segments of type `CheerioElement` (`term`, `translation`, `definition`, etc.). Its segments contain subsegments of type `CheerioElement`, either `text` with plain text in `data` or `tag` (emphasis or italics tags) containing plain text in `data`.
@@ -153,7 +153,9 @@ export default class WordToJsonConverter {
 		}
 
 		this.jsonHelper.saveSummaryAsJson(summaryOfEntries);
-		this.dbLogger.convertedHtmlToJson(summaryOfEntries.length);
+		this.dbLogger.fullGreen(
+			`Converted HTML string to ${summaryOfEntries.length} JSON files.`
+		);
 	}
 
 	/**Checks for duplicates in the terms of the entries in `CheerioResult` and exits if duplicates are found.*/
@@ -275,7 +277,7 @@ export default class WordToJsonConverter {
 				}
 			}
 		} else {
-			throw new Error("Unrecognized element type, neither 'text' nor 'tag'.");
+			throw Error("Unrecognized element type, neither 'text' nor 'tag'.");
 		}
 
 		return text;

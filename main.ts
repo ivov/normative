@@ -12,9 +12,10 @@ const main = async () => {
 		const mongoManager = new MongoManager("English");
 		await mongoManager.init();
 		// mongoManager.getDocument("English");
-		await mongoManager.uploadJsonSummary();
+		const x = await mongoManager.getSummaryDocument();
+		console.log(x.summary);
 	} catch (error) {
-		// dbLogger.logError(error);
+		// dbLogger.fullRed(error);
 		console.log(error);
 	}
 
