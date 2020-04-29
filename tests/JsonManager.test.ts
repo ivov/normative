@@ -24,12 +24,13 @@ describe("JsonManager", () => {
 		});
 	});
 
-	test("should get a summary of entries that is an array of strings", () => {
+	test("should get a summary of entries", () => {
 		const path = "db/json/English/!allEntriesInEnglish.json";
 
 		if (fs.existsSync(path)) {
-			const summary = JsonManager.getSummaryOfEntries("English");
-			expect(summary).toBeInstanceOf(Array);
+			const summaryObject = JsonManager.getSummaryOfEntries("English");
+			expect(summaryObject).toBeInstanceOf(Object);
+			const { summary } = summaryObject;
 			for (let entry of summary) {
 				expect(typeof entry).toBe("string");
 			}
@@ -60,7 +61,8 @@ describe("JsonManager", () => {
 			let entry: Entry;
 
 			beforeAll(() => {
-				const summary = JsonManager.getSummaryOfEntries("English");
+				const summaryObject = JsonManager.getSummaryOfEntries("English");
+				const { summary } = summaryObject;
 				const randomJsonFile =
 					summary[Math.floor(Math.random() * summary.length)];
 				entry = JsonManager.convertJsonToEntry(

@@ -1,7 +1,7 @@
 import fs from "fs";
 import { promisify } from "util";
 import stringify from "json-stringify-pretty-compact";
-import TerminalLogger from "../logging/TerminalLogger";
+import dbLogger from "./dbLogger";
 import Entry from "./Entry";
 
 /**Responsible for reading and deleting JSON files.*/
@@ -28,15 +28,20 @@ export default class JsonManager {
 		language: AvailableLanguages,
 		summaryOfEntries: string[]
 	): void {
-		const allEntriesAsJsonString = stringify(summaryOfEntries, {
-			indent: 2
-		});
+		const allEntriesAsJsonString = stringify(
+			{ summary: summaryOfEntries }, // { summary: ["agreement", "appurtenance", etc.] }
+			{
+				indent: 2
+			}
+		);
 		const path = `db/json/${language}/!allEntriesIn${language}.json`; // "!" to keep file at top
 		fs.writeFileSync(path, allEntriesAsJsonString, "utf8");
 	}
 
 	/**Returns a summary from a JSON file.*/
-	public static getSummaryOfEntries(language: AvailableLanguages): string[] {
+	public static getSummaryOfEntries(
+		language: AvailableLanguages
+	): { summary: string[] } {
 		const path = `db/json/${language}/!allEntriesIn${language}.json`;
 
 		if (!fs.existsSync(path)) throw Error("No summary exists for: " + language);
@@ -45,13 +50,21 @@ export default class JsonManager {
 		return JSON.parse(data.toString());
 	}
 
+	/**Parses a JSON file into a JavaScript object.*/
+	public static parseJsonIntoObject(
+		language: AvailableLanguages,
+		jsonFilename: string
+	) {
+		const data = fs.readFileSync(`db/json/${language}/${jsonFilename}`);
+		return JSON.parse(data.toString());
+	}
+
 	/**Converts a JSON file into an entry.*/
 	public static convertJsonToEntry(
 		language: AvailableLanguages,
-		filename: string
+		jsonFilename: string
 	): Entry {
-		const data = fs.readFileSync(`db/json/${language}/${filename}`);
-		const parsedObject = JSON.parse(data.toString());
+		const parsedObject = this.parseJsonIntoObject(language, jsonFilename);
 		const entry = new Entry(parsedObject.term, parsedObject.translation);
 
 		for (let property in parsedObject) {
@@ -78,6 +91,6 @@ export default class JsonManager {
 			});
 		});
 
-		TerminalLogger.logDeletedJsonFiles(language);
+		dbLogger.deletedAllJsonFiles(language);
 	}
 }

@@ -1,37 +1,36 @@
 import chalk from "chalk";
 import cheerio from "cheerio";
-import { LOOSE_FIELD_STRINGS } from "../db/constants";
-import WordToJsonConverter from "../db/WordToJsonConverter";
-import JsonManager from "../db/JsonManager";
-import Entry from "../db/Entry";
+import { LOOSE_FIELD_STRINGS } from "./constants";
+import WordToJsonConverter from "./WordToJsonConverter";
+import JsonManager from "./JsonManager";
 
-/** Responsible for logging messages for `WordToJsonConverter` and `FirestoreManager`. Independent method: `logEntryToTerminal`.*/
-export default class TerminalLogger {
+/** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoManager`, and `FirestoreManager`.*/
+export default class dbLogger {
 	public static logError(errorMessage: string) {
 		console.log(chalk.keyword("red").inverse(errorMessage));
 	}
 
-	public static logDeletedJsonFiles(language: AvailableLanguages): void {
+	public static deletedAllJsonFiles(language: AvailableLanguages): void {
 		console.log(
 			chalk.keyword("green").inverse(`Deleted all JSON files in ${language}.\n`)
 		);
 	}
 
-	public static logConvertedDocxToHtml(): void {
+	public static convertedDocxToHtml(): void {
 		console.log(
 			chalk.keyword("green").inverse("Converted DOCX file to HTML string.\n")
 		);
 	}
 
-	public static logConvertedHtmlToJson(entries: number): void {
+	public static convertedHtmlToJson(numberOfEntries: number): void {
 		console.log(
 			chalk
 				.keyword("green")
-				.inverse(`Converted HTML string to ${entries} JSON files.\n`)
+				.inverse(`Converted HTML string to ${numberOfEntries} JSON files.\n`)
 		);
 	}
 
-	public static logJsonSavingProgress({
+	public static savingJsonInProgress({
 		counter,
 		total,
 		slug
@@ -49,7 +48,7 @@ export default class TerminalLogger {
 		);
 	}
 
-	static logSavedNumberOfEntries(
+	static savedNumberOfEntries(
 		summaryOfEntries: string[],
 		language: AvailableLanguages
 	) {
@@ -62,7 +61,7 @@ export default class TerminalLogger {
 		);
 	}
 
-	public static logUploadedEntries(
+	public static uploadedToFirestore(
 		language: AvailableLanguages,
 		slug: string
 	): void {
@@ -71,17 +70,22 @@ export default class TerminalLogger {
 		);
 	}
 
-	public static logUploadedSummary(language: AvailableLanguages): void {
+	public static uploadedSummaryToFirestore(language: AvailableLanguages): void {
 		console.log(
 			`Uploaded to Firestore Summaries collection: ` +
 				chalk.bold("Summary for " + language)
 		);
 	}
 
-	public logEntryToTerminal(
-		language: AvailableLanguages,
-		filename: string
-	): void {
+	public static uploadedEntryToMongo(slug: string, collection: string): void {
+		console.log(
+			`Uploaded ${chalk.bold(slug)} to MongoDB collection ${chalk.bold(
+				collection
+			)}`
+		);
+	}
+
+	public showFullEntry(language: AvailableLanguages, filename: string): void {
 		const entry = JsonManager.convertJsonToEntry(language, filename);
 
 		const decodeHtml = (html: string) => {

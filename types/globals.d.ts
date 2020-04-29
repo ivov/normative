@@ -2,6 +2,8 @@ declare module "mammoth";
 
 type AvailableLanguages = "English" | "Spanish";
 
+type MongoDBCollection = "EnglishEntries" | "SpanishEntries" | "Summaries";
+
 type MammothResult = {
 	value: string;
 	messages: { type: string; message: string }[];

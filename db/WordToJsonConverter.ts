@@ -9,7 +9,7 @@ import {
 	LOOSE_FIELD_KEYS
 } from "./constants";
 import Entry from "./Entry";
-import TerminalLogger from "../logging/TerminalLogger";
+import dbLogger from "./dbLogger";
 import JsonManager from "./JsonManager";
 
 /** Responsible for converting the entries in a DOCX file into an HTML string and it into multiple JSON files.*/
@@ -79,7 +79,7 @@ export default class WordToJsonConverter {
 			"§ Classified into:" // because `Classified under` uses # as well
 		);
 
-		TerminalLogger.logConvertedDocxToHtml();
+		dbLogger.convertedDocxToHtml();
 	}
 
 	/**Converts a long HTML string into multiple entries and persists them as JSON files. The intermediate step between HTML and JSON is `cheerioResult`. `cheerioResult` is an array of entries of type `CheerioElement` containing the properties `type`, `name` and `children`. An entry's `children` are its segments of type `CheerioElement` (`term`, `translation`, `definition`, etc.). Its segments contain subsegments of type `CheerioElement`, either `text` with plain text in `data` or `tag` (emphasis or italics tags) containing plain text in `data`.
@@ -132,7 +132,7 @@ export default class WordToJsonConverter {
 			let entry = this.createEntry(cheerioEntry);
 			JsonManager.saveEntryAsJson(this.language, entry);
 
-			TerminalLogger.logJsonSavingProgress({
+			dbLogger.savingJsonInProgress({
 				counter: index + 1,
 				total: cheerioResult.length,
 				slug: entry.slug
@@ -143,7 +143,7 @@ export default class WordToJsonConverter {
 		}
 
 		JsonManager.saveSummaryAsJson(this.language, summaryOfEntries);
-		TerminalLogger.logConvertedHtmlToJson(summaryOfEntries.length);
+		dbLogger.convertedHtmlToJson(summaryOfEntries.length);
 	}
 
 	/**Checks for duplicates in the terms of the entries in `CheerioResult` and exits if duplicates are found.*/

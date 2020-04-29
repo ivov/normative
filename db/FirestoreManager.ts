@@ -1,6 +1,5 @@
-import fs from "fs";
 import dotenv from "dotenv";
-import TerminalLogger from "../logging/TerminalLogger";
+import dbLogger from "./dbLogger";
 import JsonManager from "./JsonManager";
 
 export default class FirestoreManager {
@@ -37,7 +36,7 @@ export default class FirestoreManager {
 				.doc(entry.slug)
 				.set({ ...entry }, { merge: true });
 
-			TerminalLogger.logUploadedEntries(language, entry.slug);
+			dbLogger.uploadedToFirestore(language, entry.slug);
 		}
 
 		const summaryOfEntries = JsonManager.getSummaryOfEntries(language);
@@ -47,7 +46,7 @@ export default class FirestoreManager {
 			.doc(language + "-summary")
 			.set({ ...summaryOfEntries });
 
-		TerminalLogger.logUploadedSummary(language);
+		dbLogger.uploadedSummaryToFirestore(language);
 	}
 
 	/**Deletes all docs (including summary) for a given language from Firestore.

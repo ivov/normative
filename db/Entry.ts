@@ -11,9 +11,9 @@ const enumerable = (value: boolean) => {
 };
 
 export default class Entry {
-	slug: string;
 	term: string;
 	translation: string;
+	slug: string;
 	note?: string;
 	definition?: string;
 	similarTo?: string[];
@@ -24,6 +24,7 @@ export default class Entry {
 	derivedFrom?: string[];
 	derivedInto?: string[];
 	reference?: string[];
+
 	[key: string]:
 		| string
 		| string[]
