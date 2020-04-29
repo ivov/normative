@@ -1,8 +1,24 @@
 import dotenv from "dotenv";
-import dbLogger from "./dbLogger";
-import JsonManager from "./JsonManager";
+import JsonHelper from "./JsonHelper";
+import DbLogger from "./DbLogger";
 
 export default class FirestoreManager {
+	private language: AvailableLanguages;
+	private jsonHelper: JsonHelper;
+	private dbLogger: DbLogger;
+
+	constructor(language: AvailableLanguages) {
+		this.dbLogger =
+			language === "English"
+				? new DbLogger("English")
+				: new DbLogger("Spanish");
+
+		this.jsonHelper =
+			language === "English"
+				? new JsonHelper("English")
+				: new JsonHelper("Spanish");
+	}
+
 	/**Initializes app with credentials as environment variables and returns a database instance.*/
 	connectToFirestore() {
 		const firebase = require("firebase");
@@ -24,46 +40,43 @@ export default class FirestoreManager {
 		const db = this.connectToFirestore();
 
 		// summary filename at zeroth index unneeded
-		const [_, ...entryFilenames] = await JsonManager.getAllJsonFilenames(
-			language
-		);
+		const [_, ...entryFilenames] = await this.jsonHelper.getAllJsonFilenames();
 
 		for (let filename of entryFilenames) {
-			const entry = JsonManager.convertJsonToEntry(language, filename);
+			const entry = this.jsonHelper.convertJsonToEntry(filename);
 
 			await db
 				.collection(language + "-terms")
 				.doc(entry.slug)
 				.set({ ...entry }, { merge: true });
 
-			dbLogger.uploadedToFirestore(language, entry.slug);
+			this.dbLogger.uploadedToFirestore(entry.slug);
 		}
 
-		const summaryOfEntries = JsonManager.getSummaryOfEntries(language);
+		const summaryOfEntries = this.jsonHelper.getSummary();
 
 		await db
 			.collection("Summaries")
 			.doc(language + "-summary")
 			.set({ ...summaryOfEntries });
 
-		dbLogger.uploadedSummaryToFirestore(language);
+		this.dbLogger.uploadedSummaryToFirestore();
 	}
 
 	/**Deletes all docs (including summary) for a given language from Firestore.
 	See: https://firebase.google.com/docs/firestore/manage-data/delete-data */
-	public async deleteFromFirestore(
-		language: AvailableLanguages
-	): Promise<void> {
+	public async deleteFromFirestore() {
 		const db = this.connectToFirestore();
 		const batchSize = 20;
-		let collectionRef = db.collection(language + "-terms");
-		let query = collectionRef.orderBy("__name__").limit(batchSize);
+		const collectionRef = db.collection(this.language + "-terms");
+		const query = collectionRef.orderBy("__name__").limit(batchSize);
 
 		db.collection("Summaries")
-			.doc(language + "-summary")
+			.doc(this.language + "-summary")
 			.delete();
 
-		const deleteQueryBatch = (query: any, resolve: any, reject: any) => {
+		// @ts-ignore
+		const deleteQueryBatch = (query, resolve, reject) => {
 			query
 				.get()
 				.then((snapshot: any) => {

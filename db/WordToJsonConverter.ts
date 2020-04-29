@@ -9,24 +9,38 @@ import {
 	LOOSE_FIELD_KEYS
 } from "./constants";
 import Entry from "./Entry";
-import dbLogger from "./dbLogger";
-import JsonManager from "./JsonManager";
+import DbLogger from "./DbLogger";
+import JsonHelper from "./JsonHelper";
 
 /** Responsible for converting the entries in a DOCX file into an HTML string and it into multiple JSON files.*/
 export default class WordToJsonConverter {
 	public language: AvailableLanguages;
 	public filepath: string;
 	public htmlString: string;
-	private htmlEncoder: any = new XmlEntities(); // this encoder preserves accents
+	private htmlEncoder: any = new XmlEntities(); // This encoder preserves accents.
+	private dbLogger: DbLogger;
+	private jsonHelper: JsonHelper;
 
-	constructor(language: AvailableLanguages, specialDocxFilePath?: string) {
+	constructor(language: AvailableLanguages, specialFilePath?: string) {
 		this.language = language;
-		this.filepath = specialDocxFilePath
-			? specialDocxFilePath
-			: this.getFilePathFromDotEnv(language);
+
+		// Filepath for source DOCX file: either special for testing or ordinary from dotenv.
+		this.filepath = specialFilePath
+			? specialFilePath
+			: this.getFilePathFromDotEnv();
+
+		this.dbLogger =
+			language === "English"
+				? new DbLogger("English")
+				: new DbLogger("Spanish");
+
+		this.jsonHelper =
+			language === "English"
+				? new JsonHelper("English")
+				: new JsonHelper("Spanish");
 	}
 
-	private getFilePathFromDotEnv(language: AvailableLanguages): string {
+	private getFilePathFromDotEnv(): string {
 		dotenv.config();
 
 		if (!fs.existsSync(".env"))
@@ -36,7 +50,7 @@ export default class WordToJsonConverter {
 			throw Error("DOCX file path missing from dotenv file.");
 
 		const filepath =
-			language === "English"
+			this.language === "English"
 				? process.env.DOCX_PATH_ENGLISH
 				: process.env.DOCX_PATH_SPANISH;
 
@@ -48,7 +62,7 @@ export default class WordToJsonConverter {
 
 	/**Converts a DOCX file into an HTML string and stores it in the `htmlString` class field. Current JSON entries are deleted.*/
 	public async convertDocxToHtml() {
-		// await JsonManager.deleteJsonEntries(this.language);
+		// await jsonHelper.deleteJsonEntries(this.language);
 
 		console.log("Converting DOCX to HTML...");
 
@@ -79,12 +93,11 @@ export default class WordToJsonConverter {
 			"§ Classified into:" // because `Classified under` uses # as well
 		);
 
-		dbLogger.convertedDocxToHtml();
+		this.dbLogger.convertedDocxToHtml();
 	}
 
 	/**Converts a long HTML string into multiple entries and persists them as JSON files. The intermediate step between HTML and JSON is `cheerioResult`. `cheerioResult` is an array of entries of type `CheerioElement` containing the properties `type`, `name` and `children`. An entry's `children` are its segments of type `CheerioElement` (`term`, `translation`, `definition`, etc.). Its segments contain subsegments of type `CheerioElement`, either `text` with plain text in `data` or `tag` (emphasis or italics tags) containing plain text in `data`.
-	 * Example of `cheerioResult`:
-	 * ```
+	 * ```ts
 	 * [
 	 *    {
 	 *       type: "tag",
@@ -113,12 +126,8 @@ export default class WordToJsonConverter {
 	 *    },
 	 *    ~ snip: more entries ~
 	 * ]
-	 *
-	 *
-	 *
-	 *
-	 *
-	 *```*/
+	 *```
+	 */
 	public convertHtmltoJson(): void {
 		console.log("Converting HTML to JSON...");
 
@@ -130,9 +139,10 @@ export default class WordToJsonConverter {
 
 		for (let [index, cheerioEntry] of cheerioResult.entries()) {
 			let entry = this.createEntry(cheerioEntry);
-			JsonManager.saveEntryAsJson(this.language, entry);
 
-			dbLogger.savingJsonInProgress({
+			this.jsonHelper.saveEntryAsJson(entry);
+
+			this.dbLogger.savingJson({
 				counter: index + 1,
 				total: cheerioResult.length,
 				slug: entry.slug
@@ -142,8 +152,8 @@ export default class WordToJsonConverter {
 			// break; // temp: show only one entry for debugging
 		}
 
-		JsonManager.saveSummaryAsJson(this.language, summaryOfEntries);
-		dbLogger.convertedHtmlToJson(summaryOfEntries.length);
+		this.jsonHelper.saveSummaryAsJson(summaryOfEntries);
+		this.dbLogger.convertedHtmlToJson(summaryOfEntries.length);
 	}
 
 	/**Checks for duplicates in the terms of the entries in `CheerioResult` and exits if duplicates are found.*/
@@ -351,18 +361,17 @@ export default class WordToJsonConverter {
 		);
 	}
 
-	/**Adds each complex link field as an array of objects (each containing the string `"contents"` as key and an array of strings as value) to the custom entry object. This redundant `"contents"` is necessary because Firestore does not support directly nested arrays. See: https://github.com/firebase/firebase-js-sdk/issues/193#issuecomment-338075348
-	```
-	Example:
-  {
-		"classifiedInto":
-			[
-        { "contents": [ "unilateral act",  "bilateral act" ] },
-        { "contents": [ "criminal act", "tortious act" ] }
-			]
-	}
-  ```
-  */
+	/**Adds each complex link field as an array of objects (each containing the string `"contents"` as key and an array of strings as value) to the custom entry object. This redundant `"contents"` is necessary because **Firestore does not support directly nested arrays**. See: https://github.com/firebase/firebase-js-sdk/issues/193#issuecomment-338075348
+	 * ```json
+	 * {
+	 *     "classifiedInto":
+	 *         [
+	 *             { "contents": [ "unilateral act",  "bilateral act" ] },
+	 *             { "contents": [ "criminal act act",  "tortious act" ] }
+	 *         ]
+	 * }
+	 * ```
+	 */
 	private addComplexLinkFields(
 		entry: Entry,
 		complexLinkSnippets: string[]

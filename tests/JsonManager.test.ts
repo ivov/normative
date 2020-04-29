@@ -1,13 +1,14 @@
 import faker from "faker";
 import fs from "fs";
-import JsonManager from "../db/JsonManager";
+import JsonHelper from "../db/JsonHelper";
 import Entry from "../db/Entry";
-import WordToJsonConverter from "../db/WordToJsonConverter";
 import { promisify } from "util";
 
-describe("JsonManager", () => {
+describe("JsonHelper", () => {
+	const jsonHelper = new JsonHelper("English");
+
 	test("should get all the JSON filenames", async () => {
-		const filenames = await JsonManager.getAllJsonFilenames("English");
+		const filenames = await jsonHelper.getAllJsonFilenames();
 		for (let filename of filenames) {
 			expect(filename).toContain(".json");
 		}
@@ -15,7 +16,7 @@ describe("JsonManager", () => {
 
 	test("should save an entry as a JSON file and delete that JSON file", () => {
 		const entry = new Entry(faker.lorem.word(), faker.lorem.word());
-		JsonManager.saveEntryAsJson("English", entry);
+		jsonHelper.saveEntryAsJson(entry);
 		const path = `db/json/English/${entry.slug}.json`;
 		expect(fs.readFileSync(path)).not.toBeUndefined();
 
@@ -28,14 +29,13 @@ describe("JsonManager", () => {
 		const path = "db/json/English/!allEntriesInEnglish.json";
 
 		if (fs.existsSync(path)) {
-			const summaryObject = JsonManager.getSummaryOfEntries("English");
-			expect(summaryObject).toBeInstanceOf(Object);
-			const { summary } = summaryObject;
+			const summary = jsonHelper.getSummary();
+			expect(summary).toBeInstanceOf(Array);
 			for (let entry of summary) {
 				expect(typeof entry).toBe("string");
 			}
 		} else {
-			expect(() => JsonManager.getSummaryOfEntries("English")).toThrow();
+			expect(() => jsonHelper.getSummary()).toThrow();
 		}
 	});
 
@@ -46,7 +46,7 @@ describe("JsonManager", () => {
 			"db/json/!allEntriesInEnglish.json"
 		); // put elsewhere
 
-		expect(() => JsonManager.getSummaryOfEntries("English")).toThrow();
+		expect(() => jsonHelper.getSummary()).toThrow();
 
 		await rename(
 			"db/json/!allEntriesInEnglish.json",
@@ -61,14 +61,9 @@ describe("JsonManager", () => {
 			let entry: Entry;
 
 			beforeAll(() => {
-				const summaryObject = JsonManager.getSummaryOfEntries("English");
-				const { summary } = summaryObject;
-				const randomJsonFile =
-					summary[Math.floor(Math.random() * summary.length)];
-				entry = JsonManager.convertJsonToEntry(
-					"English",
-					randomJsonFile + ".json"
-				);
+				const summary = jsonHelper.getSummary();
+				const randomTerm = summary[Math.floor(Math.random() * summary.length)];
+				entry = jsonHelper.convertJsonToEntry(randomTerm + ".json");
 			});
 
 			test("where term, translation and slug exist and are strings", () => {

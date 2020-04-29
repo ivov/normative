@@ -2,7 +2,7 @@ import fs from "fs";
 import cheerio from "cheerio";
 import { promisify } from "util";
 import WordToJsonConverter from "../db/WordToJsonConverter";
-import JsonManager from "../db/JsonManager";
+import JsonHelper from "../db/JsonHelper";
 
 describe("WordToJsonConverter", () => {
 	describe("Constructor", () => {
@@ -142,10 +142,10 @@ describe("WordToJsonConverter", () => {
 
 			const path = `db/json/Spanish/aaa.json`;
 			const data = fs.readFileSync(path);
-			const parsedObject = JSON.parse(data.toString());
+			const object = JSON.parse(data.toString());
 
 			expect(data).not.toBeUndefined();
-			expect(parsedObject).toEqual(result);
+			expect(object).toEqual(result);
 
 			// cleanup: delete all-variant unit
 			fs.unlink(path, error => {
@@ -159,13 +159,15 @@ describe("WordToJsonConverter", () => {
 				return stats["size"]; // in bytes
 			};
 
-			const engFilenames = await JsonManager.getAllJsonFilenames("English");
+			const engJsonHelper = new JsonHelper("English");
+			const engFilenames = await engJsonHelper.getAllJsonFilenames();
 			engFilenames.forEach((filename: string) => {
 				const fileSize = getFileSize("English", filename);
 				expect(fileSize).toBeGreaterThan(0);
 			});
 
-			const spaFilenames = await JsonManager.getAllJsonFilenames("Spanish");
+			const spaJsonHelper = new JsonHelper("Spanish");
+			const spaFilenames = await spaJsonHelper.getAllJsonFilenames();
 			spaFilenames.forEach((filename: string) => {
 				const fileSize = getFileSize("Spanish", filename);
 				expect(fileSize).toBeGreaterThan(0);

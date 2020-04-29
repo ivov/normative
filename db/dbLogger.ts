@@ -1,28 +1,30 @@
+import fs from "fs";
 import chalk from "chalk";
 import cheerio from "cheerio";
 import { LOOSE_FIELD_STRINGS } from "./constants";
 import WordToJsonConverter from "./WordToJsonConverter";
-import JsonManager from "./JsonManager";
+import JsonHelper from "./JsonHelper";
+import { file } from "@babel/types";
 
 /** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoManager`, and `FirestoreManager`.*/
-export default class dbLogger {
-	public static logError(errorMessage: string) {
+export default class DbLogger {
+	private language: AvailableLanguages;
+
+	constructor(language: AvailableLanguages) {
+		this.language = language;
+	}
+
+	public logError(errorMessage: string) {
 		console.log(chalk.keyword("red").inverse(errorMessage));
 	}
 
-	public static deletedAllJsonFiles(language: AvailableLanguages): void {
-		console.log(
-			chalk.keyword("green").inverse(`Deleted all JSON files in ${language}.\n`)
-		);
-	}
-
-	public static convertedDocxToHtml(): void {
+	public convertedDocxToHtml(): void {
 		console.log(
 			chalk.keyword("green").inverse("Converted DOCX file to HTML string.\n")
 		);
 	}
 
-	public static convertedHtmlToJson(numberOfEntries: number): void {
+	public convertedHtmlToJson(numberOfEntries: number): void {
 		console.log(
 			chalk
 				.keyword("green")
@@ -30,7 +32,7 @@ export default class dbLogger {
 		);
 	}
 
-	public static savingJsonInProgress({
+	public savingJson({
 		counter,
 		total,
 		slug
@@ -48,36 +50,37 @@ export default class dbLogger {
 		);
 	}
 
-	static savedNumberOfEntries(
-		summaryOfEntries: string[],
-		language: AvailableLanguages
-	) {
+	savedJson(summaryOfEntries: string[]) {
 		console.log(
 			chalk
 				.keyword("green")
 				.inverse(
-					`\nConverted ${summaryOfEntries.length} entries in ${language} from DOCX to JSON.`
+					`\nConverted ${summaryOfEntries.length} entries in ${this.language} from DOCX to JSON.`
 				)
 		);
 	}
 
-	public static uploadedToFirestore(
-		language: AvailableLanguages,
-		slug: string
-	): void {
+	public deletedAllJsonFiles() {
 		console.log(
-			`Uploaded to Firestore ${language} collection: ` + chalk.bold(slug)
+			chalk
+				.keyword("green")
+				.inverse(`Deleted all JSON files in ${this.language}.\n`)
+		);
+	}
+	public uploadedToFirestore(slug: string) {
+		console.log(
+			`Uploaded to Firestore ${this.language} collection: ` + chalk.bold(slug)
 		);
 	}
 
-	public static uploadedSummaryToFirestore(language: AvailableLanguages): void {
+	public uploadedSummaryToFirestore() {
 		console.log(
 			`Uploaded to Firestore Summaries collection: ` +
-				chalk.bold("Summary for " + language)
+				chalk.bold("Summary for " + this.language)
 		);
 	}
 
-	public static uploadedEntryToMongo(slug: string, collection: string): void {
+	public uploadedEntryToMongo(slug: string, collection: string) {
 		console.log(
 			`Uploaded ${chalk.bold(slug)} to MongoDB collection ${chalk.bold(
 				collection
@@ -85,8 +88,12 @@ export default class dbLogger {
 		);
 	}
 
-	public showFullEntry(language: AvailableLanguages, filename: string): void {
-		const entry = JsonManager.convertJsonToEntry(language, filename);
+	public showFullEntry(filename: string) {
+		// TODO: no need for entry?
+		// const entry = this.jsonHelper.convertJsonToEntry(filename);
+
+		const data = fs.readFileSync(`db/json/${this.language}/${filename}`);
+		const entry = JSON.parse(data.toString());
 
 		const decodeHtml = (html: string) => {
 			return html

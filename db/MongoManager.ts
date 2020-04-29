@@ -1,64 +1,75 @@
 import { MongoClient, Db, Collection } from "mongodb";
-import dbLogger from "./dbLogger";
-import JsonManager from "./JsonManager";
+import DbLogger from "./DbLogger";
+import JsonHelper from "./JsonHelper";
 
 export default class MongoManager {
+	private client: MongoClient;
 	private db: Db;
 	private language: AvailableLanguages;
-	private collection: Collection;
+	private collection: Collection; // active collection based on `this.language`
+	private dbLogger: DbLogger;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
+		this.dbLogger =
+			language === "English"
+				? new DbLogger("English")
+				: new DbLogger("Spanish");
 	}
 
+	/** Initialize client, open connection and set `db`, `language` and `collection` references.*/
 	public async init() {
-		const client = new MongoClient("mongodb://localhost:27017", {
+		this.client = new MongoClient("mongodb://localhost:27017", {
 			useNewUrlParser: true,
 			useUnifiedTopology: true
 		});
+		await this.client.connect();
 
-		await client.connect();
-		this.db = client.db("normative");
+		this.db = this.client.db("normative");
 		this.collection =
 			this.language === "English"
 				? this.db.collection("EnglishEntries")
 				: this.db.collection("SpanishEntries");
 	}
 
+	public async disconnect() {
+		await this.client.close();
+	}
+
 	private setUniqueIndex() {
+		// to be set only once per collection
 		this.collection.createIndex("term", { unique: true });
 	}
 
-	public async uploadJsonEntry(jsonFilename: string) {
-		const parsedObject = JsonManager.parseJsonIntoObject(
-			this.language,
-			jsonFilename
-		);
+	public async uploadJsonEntry(filename: string) {
+		const jsonHelper = new JsonHelper(this.language);
+		const object = jsonHelper.parseJsonIntoObject(filename);
 
-		await this.collection.insertOne(parsedObject);
-		dbLogger.uploadedEntryToMongo(parsedObject.term, this.collection.namespace);
+		await this.collection.insertOne(object);
+		this.dbLogger.uploadedEntryToMongo(object.term, this.collection.namespace);
 	}
 
 	public async uploadAllJsonEntries() {
-		const filenames = await JsonManager.getAllJsonFilenames(this.language);
+		const jsonHelper = new JsonHelper(this.language);
+		const filenames = await jsonHelper.getAllJsonFilenames();
+
 		for (let filename of filenames) {
 			await this.uploadJsonEntry(filename);
 		}
 	}
 
 	public async uploadJsonSummary() {
-		const jsonFilename =
+		const filename =
 			this.language === "English"
 				? "!allEntriesInEnglish.json"
 				: "!allEntriesInSpanish.json";
 
-		const parsedObject = JsonManager.parseJsonIntoObject(
-			this.language,
-			jsonFilename
-		);
+		const jsonHelper = new JsonHelper(this.language);
+		const object = jsonHelper.parseJsonIntoObject(filename);
 
-		await this.collection.insertOne(parsedObject);
-		dbLogger.uploadedEntryToMongo(
+		await this.collection.insertOne(object);
+
+		this.dbLogger.uploadedEntryToMongo(
 			`Summary of ${this.language} entries`,
 			this.collection.namespace
 		);
