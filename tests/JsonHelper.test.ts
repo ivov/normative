@@ -17,7 +17,7 @@ describe("JsonHelper", () => {
 
 	test("should save an entry as a JSON file and delete that JSON file", () => {
 		const entry = new Entry(faker.lorem.word(), faker.lorem.word());
-		jsonHelper.saveEntryAsJson(entry);
+		jsonHelper.saveSingleEntryAsJson(entry);
 		const path = `db/json/English/${entry.slug}.json`;
 		expect(fs.readFileSync(path)).not.toBeUndefined();
 
@@ -27,7 +27,7 @@ describe("JsonHelper", () => {
 	});
 
 	test("should get a summary of entries", () => {
-		const path = "db/json/English/!allEntriesInEnglish.json";
+		const path = "db/json/English/!summaryEnglish.json";
 
 		if (fs.existsSync(path)) {
 			const summary = jsonHelper.getSummary();
@@ -43,20 +43,20 @@ describe("JsonHelper", () => {
 	test("should fail at getting the summary of entries if it does not exist", async () => {
 		const rename = promisify(fs.rename);
 		await rename(
-			"db/json/English/!allEntriesInEnglish.json",
-			"db/json/!allEntriesInEnglish.json"
+			"db/json/English/!summaryEnglish.json",
+			"db/json/!summaryEnglish.json"
 		); // put elsewhere
 
 		expect(() => jsonHelper.getSummary()).toThrow();
 
 		await rename(
-			"db/json/!allEntriesInEnglish.json",
-			"db/json/English/!allEntriesInEnglish.json"
+			"db/json/!summaryEnglish.json",
+			"db/json/English/!summaryEnglish.json"
 		); // put back
 	});
 
 	describe("Should convert a random JSON file into an entry", () => {
-		const path = `db/json/English/!allEntriesInEnglish.json`;
+		const path = `db/json/English/!summaryEnglish.json`;
 
 		if (fs.existsSync(path)) {
 			let entry: Entry;

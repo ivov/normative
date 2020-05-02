@@ -128,7 +128,7 @@ export default class WordToJsonConverter {
 	 * ]
 	 *```
 	 */
-	public convertHtmltoJson(): void {
+	public convertHtmltoJson(options?: { oneJsonFile: boolean }) {
 		console.log("Converting HTML to JSON...");
 
 		const $ = cheerio.load(this.htmlString);
@@ -136,11 +136,18 @@ export default class WordToJsonConverter {
 		this.checkForDuplicates(cheerioResult);
 
 		let summaryOfEntries: string[] = [];
+		let bigObject: AllEntries = {
+			allEntries: []
+		};
 
 		for (let [index, cheerioEntry] of cheerioResult.entries()) {
 			let entry = this.createEntry(cheerioEntry);
 
-			this.jsonHelper.saveEntryAsJson(entry);
+			if (options && options.oneJsonFile) {
+				bigObject.allEntries.push(entry.toObject());
+			} else {
+				this.jsonHelper.saveSingleEntryAsJson(entry);
+			}
 
 			this.dbLogger.savingJson({
 				counter: index + 1,
@@ -149,8 +156,11 @@ export default class WordToJsonConverter {
 			});
 
 			summaryOfEntries.push(entry.slug);
-			// break; // temp, show only one entry for debugging
+			// break; // temp, to show only one entry for debugging
 		}
+
+		if (options && options.oneJsonFile)
+			this.jsonHelper.saveAllEntriesAsSingleJson(bigObject);
 
 		this.jsonHelper.saveSummaryAsJson(summaryOfEntries);
 		this.dbLogger.fullGreen(
@@ -280,8 +290,10 @@ export default class WordToJsonConverter {
 				}
 			}
 		} else {
+			const problemEntry = element.parent.parent.children[0].children[0]
+				.data as string;
 			throw Error(
-				"Unrecognized element type, neither 'text' nor 'tag'.\n Usually a mistakenly styled line break, e.g. <br> tagged with 'translation' or 'definition'."
+				`Unrecognized element type, neither "tag" nor "text".\nLook for styled line breaks in the entry: ${problemEntry}`
 			);
 		}
 		return text;

@@ -25,7 +25,7 @@ export default class MongoManager {
 		});
 		await this.client.connect();
 
-		this.dbLogger.fullGreen("Connected to MongoDB");
+		console.log("Connected to MongoDB");
 
 		this.db = this.client.db("normative");
 		this.collection =
@@ -38,6 +38,7 @@ export default class MongoManager {
 		await this.client.close();
 	}
 
+	/**Set a unique index on the active collection to prevent duplicate terms.*/
 	private setUniqueIndex() {
 		// to be set only once per collection
 		this.collection.createIndex("term", { unique: true });
@@ -47,7 +48,14 @@ export default class MongoManager {
 		const jsonHelper = new JsonHelper(this.language);
 		const object = jsonHelper.parseJsonIntoObject(filename);
 
-		await this.collection.insertOne(object);
+		try {
+			await this.collection.insertOne(object);
+		} catch (error) {
+			const { name, code, keyValue } = error;
+			const { term } = keyValue;
+			if (name === "MongoError" && code === 11000)
+				throw Error(`MongoDB cannot accept duplicate term: ${term}`);
+		}
 
 		this.dbLogger.uploadedEntry({
 			term: object.term,
@@ -68,8 +76,8 @@ export default class MongoManager {
 	public async uploadJsonSummary() {
 		const filename =
 			this.language === "English"
-				? "!allEntriesInEnglish.json"
-				: "!allEntriesInSpanish.json";
+				? "!summaryEnglish.json"
+				: "!summarySpanish.json";
 
 		const jsonHelper = new JsonHelper(this.language);
 		const object = jsonHelper.parseJsonIntoObject(filename);
@@ -77,7 +85,7 @@ export default class MongoManager {
 		await this.collection.insertOne(object);
 
 		this.dbLogger.uploadedEntry({
-			term: object.term, // "!allEntriesInEnglish" or "!allEntriesInSpanish"
+			term: object.term, // "!summaryEnglish" or "!summarySpanish"
 			collection: this.collection.namespace,
 			db: "MongoDB"
 		});
@@ -93,9 +101,7 @@ export default class MongoManager {
 
 	public async getSummaryDocument() {
 		const specialTerm =
-			this.language === "English"
-				? "!allEntriesInEnglish"
-				: "!allEntriesInSpanish";
+			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
 
 		return await this.collection.findOne({ term: specialTerm });
 	}

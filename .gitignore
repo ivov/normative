@@ -5,5 +5,5 @@
 *.docx
 !/db/docx/testing/*.docx
 *.env
-notes.md
+notes.todo
 /coverage

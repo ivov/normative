@@ -18,3 +18,5 @@ type TaggedSnippets = {
 	definition: string;
 	note: string;
 };
+
+type AllEntries = { allEntries: { [key: string]: any }[] };

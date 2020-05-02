@@ -1,3 +1,4 @@
+import stringify from "json-stringify-pretty-compact";
 import { SUPERSCRIPT } from "./constants";
 
 const enumerable = (value: boolean) => {
@@ -62,5 +63,19 @@ export default class Entry {
 		}
 
 		return term;
+	}
+
+	@enumerable(false)
+	public toJsonString(): string {
+		return stringify(this, { indent: 2 });
+	}
+
+	@enumerable(false)
+	public toObject() {
+		let object: { [key: string]: any } = {};
+		for (let property in this) {
+			object[property] = this[property];
+		}
+		return object;
 	}
 }

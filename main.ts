@@ -6,17 +6,18 @@ import MongoManager from "./db/MongoManager";
 
 const main = async () => {
 	try {
-		const myConverter = new WordToJsonConverter("Spanish");
+		const myConverter = new WordToJsonConverter("English");
 		await myConverter.convertDocxToHtml();
-		myConverter.convertHtmltoJson();
+		myConverter.convertHtmltoJson({ oneJsonFile: true });
 		// const mongoManager = new MongoManager("English");
 		// await mongoManager.init();
-		// mongoManager.getDocument("English");
+		// await mongoManager.uploadJsonEntry("agreement.json");
 		// const x = await mongoManager.getSummaryDocument();
 		// console.log(x.summary);
 	} catch (error) {
-		// dbLogger.fullRed(error);
-		console.log(error);
+		const myLogger = new dbLogger("English");
+		myLogger.fullRed(error);
+		// console.log(error);
 	}
 
 	// const myLogger = new TerminalLogger();

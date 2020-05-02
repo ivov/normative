@@ -23,17 +23,26 @@ export default class JsonHelper {
 		return filenames.filter(filename => filename !== ".gitignore");
 	}
 
-	/**Saves a custom entry as a JSON file.*/
-	public saveEntryAsJson(entry: Entry): void {
-		const entryAsJsonString = stringify(entry, { indent: 2 });
+	/**Saves a single entry as a single JSON file.*/
+	public saveSingleEntryAsJson(entry: Entry): void {
+		const entryAsJsonString = entry.toJsonString();
 		const path = `db/json/${this.language}/${entry.slug}.json`;
 		fs.writeFileSync(path, entryAsJsonString, "utf8");
+	}
+
+	/**Saves all entries as a single JSON file.*/
+	public saveAllEntriesAsSingleJson(bigObject: AllEntries): void {
+		const title =
+			this.language === "English" ? "!allEntriesEnglish" : "!allEntriesSpanish";
+		const bigObjectAsJsonString = stringify(bigObject, { indent: 2 });
+		const path = `db/json/${this.language}/${title}.json`;
+		fs.writeFileSync(path, bigObjectAsJsonString, "utf8");
 	}
 
 	/**Saves a summary of entries as a JSON file.
 	 * ```ts
 	 * {
-	 *     term: "!allEntriesInEnglish",
+	 *     term: "!summaryEnglish",
 	 *     summary: [
 	 *         "agreement",
 	 *         "appurtenance",
@@ -44,9 +53,7 @@ export default class JsonHelper {
 	 */
 	public saveSummaryAsJson(summary: string[]): void {
 		const title =
-			this.language === "English"
-				? "!allEntriesInEnglish"
-				: "!allEntriesInSpanish";
+			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
 
 		const allEntriesAsJsonString = stringify(
 			{ term: title, summary },
@@ -61,7 +68,7 @@ export default class JsonHelper {
 
 	/**Returns a summary of entries from a JSON file.*/
 	public getSummary(): string[] {
-		const path = `db/json/${this.language}/!allEntriesIn${this.language}.json`;
+		const path = `db/json/${this.language}/!summary${this.language}.json`;
 
 		if (!fs.existsSync(path))
 			throw Error("No summary exists for: " + this.language);
