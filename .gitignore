@@ -1,9 +1,9 @@
 /node_modules
 /build
-/db/json/English/*.json
-/db/json/Spanish/*.json
+/data/json/English/*.json
+/data/json/Spanish/*.json
 *.docx
-!/db/docx/testing/*.docx
+!/data/docx/testing/*.docx
 *.env
 notes.todo
 /coverage

@@ -1,17 +1,17 @@
 import dotenv from "dotenv";
 import JsonHelper from "./JsonHelper";
-import DbLogger from "./DbLogger";
+import DataLogger from "./DataLogger";
 
 export default class FirestoreManager {
 	private language: AvailableLanguages;
 	private jsonHelper: JsonHelper;
-	private dbLogger: DbLogger;
+	private dataLogger: DataLogger;
 
 	constructor(language: AvailableLanguages) {
-		this.dbLogger =
+		this.dataLogger =
 			language === "English"
-				? new DbLogger("English")
-				: new DbLogger("Spanish");
+				? new DataLogger("English")
+				: new DataLogger("Spanish");
 
 		this.jsonHelper =
 			language === "English"
@@ -50,7 +50,7 @@ export default class FirestoreManager {
 				.doc(entry.slug)
 				.set({ ...entry }, { merge: true });
 
-			this.dbLogger.uploadedEntry({
+			this.dataLogger.uploadedEntry({
 				term: entry.term,
 				collection: db.collection(language + "-terms"),
 				db: "Firestore"
@@ -64,7 +64,7 @@ export default class FirestoreManager {
 			.doc(language + "-summary")
 			.set({ ...summaryOfEntries });
 
-		this.dbLogger.uploadedEntry({
+		this.dataLogger.uploadedEntry({
 			term: _,
 			collection: db.collection("Summaries"),
 			db: "Firestore"

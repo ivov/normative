@@ -1,9 +1,9 @@
 import faker from "faker";
 import fs from "fs";
 import { promisify } from "util";
-import JsonHelper from "../db/JsonHelper";
-import Entry from "../db/Entry";
-import WordToJsonConverter from "../db/WordToJsonConverter";
+import JsonHelper from "../data/JsonHelper";
+import Entry from "../data/Entry";
+import WordToJsonConverter from "../data/WordToJsonConverter";
 
 describe("JsonHelper", () => {
 	const jsonHelper = new JsonHelper("English");
@@ -18,7 +18,7 @@ describe("JsonHelper", () => {
 	test("should save an entry as a JSON file and delete that JSON file", () => {
 		const entry = new Entry(faker.lorem.word(), faker.lorem.word());
 		jsonHelper.saveSingleEntryAsJson(entry);
-		const path = `db/json/English/${entry.slug}.json`;
+		const path = `data/json/English/${entry.slug}.json`;
 		expect(fs.readFileSync(path)).not.toBeUndefined();
 
 		fs.unlink(path, error => {
@@ -27,7 +27,7 @@ describe("JsonHelper", () => {
 	});
 
 	test("should get a summary of entries", () => {
-		const path = "db/json/English/!summaryEnglish.json";
+		const path = "data/json/English/!summaryEnglish.json";
 
 		if (fs.existsSync(path)) {
 			const summary = jsonHelper.getSummary();
@@ -43,20 +43,20 @@ describe("JsonHelper", () => {
 	test("should fail at getting the summary of entries if it does not exist", async () => {
 		const rename = promisify(fs.rename);
 		await rename(
-			"db/json/English/!summaryEnglish.json",
-			"db/json/!summaryEnglish.json"
+			"data/json/English/!summaryEnglish.json",
+			"data/json/!summaryEnglish.json"
 		); // put elsewhere
 
 		expect(() => jsonHelper.getSummary()).toThrow();
 
 		await rename(
-			"db/json/!summaryEnglish.json",
-			"db/json/English/!summaryEnglish.json"
+			"data/json/!summaryEnglish.json",
+			"data/json/English/!summaryEnglish.json"
 		); // put back
 	});
 
 	describe("Should convert a random JSON file into an entry", () => {
-		const path = `db/json/English/!summaryEnglish.json`;
+		const path = `data/json/English/!summaryEnglish.json`;
 
 		if (fs.existsSync(path)) {
 			let entry: Entry;
@@ -141,7 +141,7 @@ describe("JsonHelper", () => {
 			// recreate all deleted JSON files
 			const converter = new WordToJsonConverter("English");
 			await converter.convertDocxToHtml();
-			converter.convertHtmltoJson();
+			converter.convertHtmlToJson({ multipleJsonFiles: true });
 		}
 	});
 });

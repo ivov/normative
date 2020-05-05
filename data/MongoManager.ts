@@ -1,20 +1,20 @@
 import { MongoClient, Db, Collection } from "mongodb";
-import DbLogger from "./DbLogger";
+import DataLogger from "./DataLogger";
 import JsonHelper from "./JsonHelper";
 
 export default class MongoManager {
 	private client: MongoClient;
 	private db: Db;
 	private language: AvailableLanguages;
-	private collection: Collection; // active collection based on `this.language`
-	private dbLogger: DbLogger;
+	private collection: Collection;
+	private dataLogger: DataLogger;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
-		this.dbLogger =
+		this.dataLogger =
 			language === "English"
-				? new DbLogger("English")
-				: new DbLogger("Spanish");
+				? new DataLogger("English")
+				: new DataLogger("Spanish");
 	}
 
 	/** Initialize client, open connection and set `db`, `language` and `collection` references.*/
@@ -25,7 +25,7 @@ export default class MongoManager {
 		});
 		await this.client.connect();
 
-		console.log("Connected to MongoDB");
+		this.dataLogger.fullGreen("Connected to MongoDB");
 
 		this.db = this.client.db("normative");
 		this.collection =
@@ -38,15 +38,17 @@ export default class MongoManager {
 		await this.client.close();
 	}
 
-	/**Set a unique index on the active collection to prevent duplicate terms.*/
-	private setUniqueIndex() {
-		// to be set only once per collection
-		this.collection.createIndex("term", { unique: true });
+	/**Set a unique index on the active collection to prevent duplicate terms. To be set only once per collection.*/
+	private async setUniqueIndex() {
+		await this.collection.createIndex("term", { unique: true });
+		this.dataLogger.fullGreen(
+			"Set unique index to: " + this.collection.namespace
+		);
 	}
 
-	public async uploadJsonEntry(filename: string) {
+	public async uploadEntryFromJsonFilename(filename: string) {
 		const jsonHelper = new JsonHelper(this.language);
-		const object = jsonHelper.parseJsonIntoObject(filename);
+		const object = jsonHelper.convertJsonToObject(filename);
 
 		try {
 			await this.collection.insertOne(object);
@@ -54,22 +56,48 @@ export default class MongoManager {
 			const { name, code, keyValue } = error;
 			const { term } = keyValue;
 			if (name === "MongoError" && code === 11000)
-				throw Error(`MongoDB cannot accept duplicate term: ${term}`);
+				throw Error("MongoDB cannot accept duplicate term: " + term);
 		}
 
-		this.dbLogger.uploadedEntry({
+		this.dataLogger.uploadedEntry({
 			term: object.term,
 			collection: this.collection.namespace,
 			db: "MongoDB"
 		});
 	}
 
-	public async uploadAllJsonEntries() {
+	public async uploadAll(options: {
+		fromSingleFile?: boolean;
+		fromMultipleFiles?: boolean;
+	}) {
+		if (options.fromMultipleFiles) {
+			await this.fromMultipleFiles();
+		} else {
+			await this.fromSingleFile();
+		}
+	}
+
+	private async fromMultipleFiles() {
 		const jsonHelper = new JsonHelper(this.language);
 		const filenames = await jsonHelper.getAllJsonFilenames();
 
 		for (let filename of filenames) {
-			await this.uploadJsonEntry(filename);
+			await this.uploadEntryFromJsonFilename(filename);
+		}
+	}
+
+	private async fromSingleFile() {
+		const jsonHelper = new JsonHelper(this.language);
+		const bigObject = jsonHelper.getBigObjectFromSingleJsonFile();
+
+		for (let entryObject of bigObject.allEntries) {
+			await this.collection.insertOne(entryObject);
+
+			this.dataLogger.uploadedEntry({
+				term: entryObject.term,
+				collection: this.collection.namespace,
+				db: "MongoDB"
+			});
 		}
 	}
 
@@ -80,11 +108,11 @@ export default class MongoManager {
 				: "!summarySpanish.json";
 
 		const jsonHelper = new JsonHelper(this.language);
-		const object = jsonHelper.parseJsonIntoObject(filename);
+		const object = jsonHelper.convertJsonToObject(filename);
 
 		await this.collection.insertOne(object);
 
-		this.dbLogger.uploadedEntry({
+		this.dataLogger.uploadedEntry({
 			term: object.term, // "!summaryEnglish" or "!summarySpanish"
 			collection: this.collection.namespace,
 			db: "MongoDB"
@@ -104,5 +132,23 @@ export default class MongoManager {
 			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
 
 		return await this.collection.findOne({ term: specialTerm });
+	}
+
+	public async deleteDocument(termToBeDeleted: string) {
+		await this.collection.deleteOne({ term: termToBeDeleted });
+
+		this.dataLogger.deletedEntry({
+			term: termToBeDeleted,
+			collection: this.collection.namespace,
+			db: "MongoDB"
+		});
+	}
+
+	public async deleteAllDocuments() {
+		await this.collection.deleteMany({});
+		this.dataLogger.deletedAllEntries({
+			collection: this.collection.namespace,
+			db: "MongoDB"
+		});
 	}
 }

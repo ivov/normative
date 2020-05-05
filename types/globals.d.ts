@@ -19,4 +19,4 @@ type TaggedSnippets = {
 	note: string;
 };
 
-type AllEntries = { allEntries: { [key: string]: any }[] };
+type bigObjectOfAllEntries = { allEntries: { [key: string]: any }[] };

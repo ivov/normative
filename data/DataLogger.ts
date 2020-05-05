@@ -1,3 +1,4 @@
+import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import cheerio from "cheerio";
@@ -5,7 +6,7 @@ import { LOOSE_FIELD_STRINGS } from "./constants";
 import WordToJsonConverter from "./WordToJsonConverter";
 
 /** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoManager`, and `FirestoreManager`.*/
-export default class DbLogger {
+export default class DataLogger {
 	private language: AvailableLanguages;
 
 	constructor(language: AvailableLanguages) {
@@ -48,28 +49,57 @@ export default class DbLogger {
 		db: string;
 	}) {
 		console.log(
-			`Uploaded ${chalk.bold(term)} to ${db} collection ${collection}`
+			`Uploaded ${chalk.bold(term)} to ${db} collection ${chalk.bold(
+				collection
+			)}`
+		);
+	}
+
+	public deletedEntry({
+		term,
+		collection,
+		db
+	}: {
+		term: string;
+		collection: string;
+		db: string;
+	}) {
+		console.log(
+			`Deleted ${chalk.bold(term)} from ${db} collection ${chalk.bold(
+				collection
+			)}`
+		);
+	}
+
+	public deletedAllEntries({
+		collection,
+		db
+	}: {
+		collection: string;
+		db: string;
+	}) {
+		console.log(
+			`Deleted all entries from ${db} collection ${chalk.bold(collection)}`
 		);
 	}
 
 	public logEntry(filename: string) {
-		const object = JSON.parse(
-			fs.readFileSync(`db/json/${this.language}/${filename}`).toString()
-		);
+		const sourcePath = path.join("data", "json", this.language, filename);
+		const object = JSON.parse(fs.readFileSync(sourcePath).toString());
 
-		const decodeHtml = (html: string) => {
-			return html
-				.replace(/&amp;/g, "&")
-				.replace(/&lt;/g, "<")
-				.replace(/&gt;/g, ">");
-		};
+		// const decodeHtml = (html: string) => { // no need to decode for now
+		// 	return html
+		// 		.replace(/&amp;/g, "&")
+		// 		.replace(/&lt;/g, "<")
+		// 		.replace(/&gt;/g, ">");
+		// };
 
 		// main fields
 		console.log(
 			"\n" +
 				chalk.keyword("white").inverse(object.term) +
 				" --- " +
-				chalk.keyword("green").inverse(decodeHtml(object.translation))
+				chalk.keyword("green").inverse(object.translation)
 		);
 		if (object.definition !== undefined) {
 			console.log(chalk.keyword("blue").inverse(object.definition));
