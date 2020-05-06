@@ -1,32 +1,37 @@
 import fs from "fs";
-import cheerio from "cheerio";
 import WordToJsonConverter from "../data/WordToJsonConverter";
 import { promisify } from "util";
 import JsonHelper from "../data/JsonHelper";
-import Entry from "../data/Entry";
-import Summary from "../data/Summary";
-import allVariantResult from "./allVariantResult";
+import {
+	allVariantResult,
+	getCheerioResult,
+	createSummaryFromCheerio
+} from "./testUtils";
 
 describe("Converter", () => {
 	describe("Conversion process", () => {
 		test("should properly convert the all-variant DOCX entry", async () => {
 			const myConverter = new WordToJsonConverter(
 				"Spanish",
-				"data/docx/testing/all_variants_unit.docx"
+				"tests/testDocx/all_variants_unit.docx"
 			);
 
 			await myConverter.convertDocxToHtml();
-			myConverter.convertHtmlToJson({ multipleJsonFiles: true });
 
-			const pathToAllVariantEntry = `data/json/Spanish/aaa.json`;
-			const data = fs.readFileSync(pathToAllVariantEntry);
+			// convert twice just to test both
+			myConverter.convertHtmlToJson({ multipleJsonFiles: true });
+			myConverter.convertHtmlToJson({ singleJsonFile: true });
+
+			const pathToAllVariantFile = `data/json/Spanish/aaa.json`;
+			const data = fs.readFileSync(pathToAllVariantFile);
 			const object = JSON.parse(data.toString());
 
 			expect(data).not.toBeUndefined();
 			expect(object).toEqual(allVariantResult);
 
+			// cleanup
 			const deleteFile = promisify(fs.unlink);
-			deleteFile(pathToAllVariantEntry); // cleanup
+			deleteFile(pathToAllVariantFile);
 		});
 
 		test("should produce JSON files larger than 0 bytes", async () => {
@@ -58,25 +63,8 @@ describe("Converter", () => {
 			const existingFilenames = await jsonHelper.getAllJsonFilenames();
 			if (existingFilenames.length > 0) jsonHelper.deleteAllJsonFiles();
 
-			const converter = new WordToJsonConverter("English");
-
-			const getCheerioResult = async () => {
-				await converter.convertDocxToHtml();
-				const $ = cheerio.load(converter.htmlString);
-				return Array.from($("p"));
-			};
-
-			const makeQuickSummary = (cheerioResult: CheerioElement[]) => {
-				const summary = new Summary("English");
-				for (let cheerioEntry of cheerioResult) {
-					const entry = Entry.createFromCheerio(cheerioEntry);
-					summary.addTerm(entry.term);
-				}
-				return summary;
-			};
-
 			const cheerioResult = await getCheerioResult();
-			const summary = makeQuickSummary(cheerioResult);
+			const summary = createSummaryFromCheerio(cheerioResult);
 			expect(cheerioResult.length).toEqual(summary.getTerms().length);
 		});
 	});

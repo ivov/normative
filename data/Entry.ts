@@ -59,10 +59,6 @@ export default class Entry {
 		return term;
 	}
 
-	public toJsonString(): string {
-		return prettyStringify(this, { indent: 2 });
-	}
-
 	public toObject() {
 		let object: { [key: string]: any } = {};
 		for (let property in this) {

@@ -10,5 +10,6 @@ module.exports = {
 		"ts-jest": {
 			isolatedModules: true // speeds up ts-jest
 		}
-	}
+	},
+	coveragePathIgnorePatterns: ["<rootDir>/data/DataLogger.ts"]
 };

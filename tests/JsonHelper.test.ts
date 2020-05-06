@@ -1,8 +1,14 @@
 import fs from "fs";
 import { promisify } from "util";
 import JsonHelper from "../data/JsonHelper";
-import Entry from "../data/Entry";
 import Summary from "../data/Summary";
+import {
+	createAndSaveSummaryFile,
+	createAllEntriesJsonFile,
+	createAgreementJsonFile
+} from "./testUtils";
+import WordToJsonConverter from "../data/WordToJsonConverter";
+import Entry from "../data/Entry";
 
 describe("JsonHelper", () => {
 	const jsonHelper = new JsonHelper("English");
@@ -14,17 +20,13 @@ describe("JsonHelper", () => {
 		}
 	});
 
-	test("should get a summary of entries", () => {
-		const summaryPath = "data/json/English/!summaryEnglish.json";
+	test("should get a summary of entries", async () => {
+		await createAndSaveSummaryFile();
+		const summary = jsonHelper.getSummary();
 
-		if (fs.existsSync(summaryPath)) {
-			const summary = jsonHelper.getSummary();
-			expect(summary).toBeInstanceOf(Summary);
-			for (let term of summary.getTerms()) {
-				expect(typeof term).toBe("string");
-			}
-		} else {
-			expect(() => jsonHelper.getSummary()).toThrow();
+		expect(summary).toBeInstanceOf(Summary);
+		for (let term of summary.getTerms()) {
+			expect(typeof term).toBe("string");
 		}
 	});
 
@@ -47,7 +49,7 @@ describe("JsonHelper", () => {
 		}
 	});
 
-	describe("Should convert a random JSON file into an entry", () => {
+	describe("should convert a JSON file into an entry", () => {
 		const agreementPath = `data/json/English/agreement.json`;
 
 		if (fs.existsSync(agreementPath)) {
@@ -123,11 +125,30 @@ describe("JsonHelper", () => {
 
 			expect(newFilenames.length).toBe(0);
 			expect(jsonHelper.deleteAllJsonFiles()).rejects.toThrow();
-
-			// recreate all deleted JSON files
-			// const converter = new WordToJsonConverter("English");
-			// await converter.convertDocxToHtml();
-			// converter.convertHtmlToJson({ multipleJsonFiles: true });
 		}
+	});
+
+	test("should get a big object from the all entries JSON file", async () => {
+		await createAllEntriesJsonFile();
+		const jsonHelper = new JsonHelper("English");
+		const bigObject = jsonHelper.getBigObjectFromSingleJsonFile();
+
+		expect(bigObject).toHaveProperty("allEntries");
+		expect(bigObject["allEntries"]).toBeInstanceOf(Array);
+	});
+
+	test("should convert a JSON file to an object", async () => {
+		await createAgreementJsonFile();
+		const object = jsonHelper.convertJsonToObject("agreement.json");
+
+		expect(object).toHaveProperty("term");
+		expect(object["term"]).toBe("agreement");
+	});
+
+	test("should convert a JSON file to an entry", async () => {
+		await createAgreementJsonFile();
+		const entry = jsonHelper.convertJsonToEntry("agreement.json");
+
+		expect(entry).toBeInstanceOf(Entry);
 	});
 });

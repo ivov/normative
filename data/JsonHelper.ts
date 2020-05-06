@@ -10,7 +10,7 @@ export default class JsonHelper {
 	private language: AvailableLanguages;
 	private dataLogger: DataLogger;
 	private jsonDir: string;
-	private allEntriesFilename: string;
+	public allEntriesFilename: string;
 	private summaryFilename: string;
 
 	constructor(language: AvailableLanguages) {
