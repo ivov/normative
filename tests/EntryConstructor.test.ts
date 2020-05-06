@@ -62,12 +62,6 @@ describe("Entry", () => {
 			expect(entry.slug).not.toMatch(/<i>|<\/i>|\.|:|\//);
 		});
 
-		// test("should have any apostrophe decoded in slug", () => {
-		// 	const entry = new Entry("ben &apos; jerry", "This is a translation");
-		// 	expect(entry.slug).not.toContain("&apos;");
-		// 	expect(entry.slug).toContain("'");
-		// });
-
 		test("should have any superscript last number as a normal number in slug", () => {
 			const entry = new Entry("hello³", "This is a translation");
 			expect(entry.slug).toBe("hello3");

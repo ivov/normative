@@ -1,9 +1,7 @@
-import faker from "faker";
 import fs from "fs";
 import { promisify } from "util";
 import JsonHelper from "../data/JsonHelper";
 import Entry from "../data/Entry";
-import WordToJsonConverter from "../data/WordToJsonConverter";
 import Summary from "../data/Summary";
 
 describe("JsonHelper", () => {
@@ -17,9 +15,9 @@ describe("JsonHelper", () => {
 	});
 
 	test("should get a summary of entries", () => {
-		const path = "data/json/English/!summaryEnglish.json";
+		const summaryPath = "data/json/English/!summaryEnglish.json";
 
-		if (fs.existsSync(path)) {
+		if (fs.existsSync(summaryPath)) {
 			const summary = jsonHelper.getSummary();
 			expect(summary).toBeInstanceOf(Summary);
 			for (let term of summary.getTerms()) {
@@ -31,33 +29,29 @@ describe("JsonHelper", () => {
 	});
 
 	test("should fail at getting the summary of entries if it does not exist", async () => {
-		const rename = promisify(fs.rename);
-		await rename(
-			"data/json/English/!summaryEnglish.json",
-			"data/json/!summaryEnglish.json"
-		); // put elsewhere
+		const summaryPath = "data/json/English/!summaryEnglish.json";
 
-		expect(() => jsonHelper.getSummary()).toThrow();
+		if (fs.existsSync(summaryPath)) {
+			const rename = promisify(fs.rename);
+			await rename(
+				"data/json/English/!summaryEnglish.json",
+				"data/json/!summaryEnglish.json"
+			); // put elsewhere
 
-		await rename(
-			"data/json/!summaryEnglish.json",
-			"data/json/English/!summaryEnglish.json"
-		); // put back
+			expect(() => jsonHelper.getSummary()).toThrow();
+
+			await rename(
+				"data/json/!summaryEnglish.json",
+				"data/json/English/!summaryEnglish.json"
+			); // put back
+		}
 	});
 
 	describe("Should convert a random JSON file into an entry", () => {
-		const path = `data/json/English/!summaryEnglish.json`;
+		const agreementPath = `data/json/English/agreement.json`;
 
-		if (fs.existsSync(path)) {
-			let entry: Entry;
-
-			beforeAll(() => {
-				const summary = jsonHelper.getSummary();
-				const summaryTerms = summary.getTerms();
-				const randomTerm =
-					summaryTerms[Math.floor(Math.random() * summaryTerms.length)];
-				entry = jsonHelper.convertJsonToEntry(randomTerm + ".json");
-			});
+		if (fs.existsSync(agreementPath)) {
+			const entry = jsonHelper.convertJsonToEntry("agreement.json");
 
 			test("where term, translation and slug exist and are strings", () => {
 				expect(entry).toHaveProperty("term");
@@ -131,9 +125,9 @@ describe("JsonHelper", () => {
 			expect(jsonHelper.deleteAllJsonFiles()).rejects.toThrow();
 
 			// recreate all deleted JSON files
-			const converter = new WordToJsonConverter("English");
-			await converter.convertDocxToHtml();
-			converter.convertHtmlToJson({ multipleJsonFiles: true });
+			// const converter = new WordToJsonConverter("English");
+			// await converter.convertDocxToHtml();
+			// converter.convertHtmlToJson({ multipleJsonFiles: true });
 		}
 	});
 });

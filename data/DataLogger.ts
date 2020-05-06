@@ -39,6 +39,20 @@ export default class DataLogger {
 		);
 	}
 
+	public uploadedAllEntries({
+		collection,
+		db
+	}: {
+		collection: string;
+		db: string;
+	}) {
+		console.log(
+			`Uploaded all entries from single JSON file to ${db} collection ${chalk.bold(
+				collection
+			)}`
+		);
+	}
+
 	public uploadedEntry({
 		term,
 		collection,

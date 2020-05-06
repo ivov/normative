@@ -155,7 +155,5 @@ export default class WordToJsonConverter {
 
 		summary.checkForDuplicates();
 		this.jsonHelper.saveSummaryAsJson(summary);
-
-		// return summary;
 	}
 }

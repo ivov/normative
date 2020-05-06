@@ -85,9 +85,10 @@ export default class MongoManager {
 			await this.uploadEntryFromJsonFilename(filename);
 		}
 
-		this.dataLogger.fullGreen(
-			"All entries uploaded from single JSON file to MongoDB."
-		);
+		this.dataLogger.uploadedAllEntries({
+			collection: this.collection.namespace,
+			db: "MongoDB"
+		});
 	}
 
 	private async fromSingleFile() {
@@ -123,26 +124,26 @@ export default class MongoManager {
 		});
 	}
 
-	public async getEntryDocument() {
-		return await this.collection.findOne({ term: "agreement" });
+	public async getEntryDocument(targetTerm: string) {
+		return await this.collection.findOne({ term: targetTerm });
 	}
 
-	public async getAllEntryDocuments() {
+	public async getAllDocuments() {
 		return await this.collection.find({}).toArray();
 	}
 
 	public async getSummaryDocument() {
-		const specialTerm =
+		const summaryTerm =
 			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
 
-		return await this.collection.findOne({ term: specialTerm });
+		return await this.collection.findOne({ term: summaryTerm });
 	}
 
-	public async deleteDocument(termToBeDeleted: string) {
-		await this.collection.deleteOne({ term: termToBeDeleted });
+	public async deleteDocument(targetTerm: string) {
+		await this.collection.deleteOne({ term: targetTerm });
 
 		this.dataLogger.deletedEntry({
-			term: termToBeDeleted,
+			term: targetTerm,
 			collection: this.collection.namespace,
 			db: "MongoDB"
 		});

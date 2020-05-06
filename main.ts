@@ -8,7 +8,7 @@ const main = async () => {
 	try {
 		const myConverter = new WordToJsonConverter("English");
 		await myConverter.convertDocxToHtml();
-		myConverter.convertHtmlToJson({ multipleJsonFiles: true });
+		myConverter.convertHtmlToJson({ singleJsonFile: true });
 		// const mongoManager = new MongoManager("English");
 		// await mongoManager.init();
 		// await mongoManager.uploadAll({ fromSingleFile: true });
