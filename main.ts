@@ -18,9 +18,9 @@ const main = async () => {
 		// const x = await mongoManager.getSummaryDocument();
 		// console.log(x.summary);
 	} catch (error) {
-		const myLogger = new dataLogger("English");
-		myLogger.fullRed(error);
-		// console.log(error);
+		// const myLogger = new dataLogger("English");
+		// myLogger.fullRed(error);
+		console.log(error);
 	}
 
 	// const myLogger = new TerminalLogger();

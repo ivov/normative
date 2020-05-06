@@ -4,6 +4,7 @@ import { promisify } from "util";
 import JsonHelper from "../data/JsonHelper";
 import Entry from "../data/Entry";
 import WordToJsonConverter from "../data/WordToJsonConverter";
+import Summary from "../data/Summary";
 
 describe("JsonHelper", () => {
 	const jsonHelper = new JsonHelper("English");
@@ -15,25 +16,14 @@ describe("JsonHelper", () => {
 		}
 	});
 
-	test("should save an entry as a JSON file and delete that JSON file", () => {
-		const entry = new Entry(faker.lorem.word(), faker.lorem.word());
-		jsonHelper.saveSingleEntryAsJson(entry);
-		const path = `data/json/English/${entry.slug}.json`;
-		expect(fs.readFileSync(path)).not.toBeUndefined();
-
-		fs.unlink(path, error => {
-			if (error) expect(() => fs.readFileSync(path)).toThrow(); // anon func to enable `path` arg
-		});
-	});
-
 	test("should get a summary of entries", () => {
 		const path = "data/json/English/!summaryEnglish.json";
 
 		if (fs.existsSync(path)) {
 			const summary = jsonHelper.getSummary();
-			expect(summary).toBeInstanceOf(Array);
-			for (let entry of summary) {
-				expect(typeof entry).toBe("string");
+			expect(summary).toBeInstanceOf(Summary);
+			for (let term of summary.getTerms()) {
+				expect(typeof term).toBe("string");
 			}
 		} else {
 			expect(() => jsonHelper.getSummary()).toThrow();
@@ -63,7 +53,9 @@ describe("JsonHelper", () => {
 
 			beforeAll(() => {
 				const summary = jsonHelper.getSummary();
-				const randomTerm = summary[Math.floor(Math.random() * summary.length)];
+				const summaryTerms = summary.getTerms();
+				const randomTerm =
+					summaryTerms[Math.floor(Math.random() * summaryTerms.length)];
 				entry = jsonHelper.convertJsonToEntry(randomTerm + ".json");
 			});
 

@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import Entry from "./Entry";
 import DataLogger from "./DataLogger";
 import JsonHelper from "./JsonHelper";
-import DuplicateChecker from "./DuplicateChecker";
+import Summary from "./Summary";
 // import { XmlEntities } from "html-entities";
 
 /** Responsible for converting the entries in a DOCX file into JSON, either as multiple JSON files or as a single JSON file.*/
@@ -89,7 +89,8 @@ export default class WordToJsonConverter {
 		this.dataLogger.fullGreen("Converted DOCX file to HTML string.");
 	}
 
-	/**Converts the HTML string in the `htmlString` class field into `cheerioResult`, checks for duplicates and dispatches to  single-file or multiple-file conversion.  `cheerioResult` is an array of entries of type `CheerioElement` whose most important  properties are `type`, `name` and `children`. An entry's `children` are its segments of type `CheerioElement` (`term`, `translation`, `definition`, etc.). Its segments contain subsegments of type `CheerioElement`, either `text` with plain text in `data` or `tag` (emphasis or italics tags) containing plain text in `data`.
+	/**Converts the HTML string in the `htmlString` class field into `cheerioResult`, converts `cheerioResult` into entries and saves entries into a single JSON file or multiple JSON files.
+	 * `cheerioResult` is an array of entries of type `CheerioElement` whose most important properties are `type`, `name` and `children`. An entry's `children` are its segments of type `CheerioElement` (`term`, `translation`, `definition`, etc.). Its segments contain subsegments of type `CheerioElement`, either `text` with plain text in `data` or `tag` (emphasis or italics tags) containing plain text in `data`.
 	 * ```ts
 	 * [
 	 *    {
@@ -99,18 +100,18 @@ export default class WordToJsonConverter {
 	 *       children: [
 	 *         {
 	 *           type: "tag",
-	 *           name: "term", ← entry segment
+	 *           name: "term", ←—— entry segment
 	 *           ~ snip ~
 	 *           children: [
 	 *             {
 	 *                type: "text",
-	 *                data: "lawyer", ← entry subsegment
+	 *                data: "subpoena", ←—— entry subsegment
 	 *                ~ snip ~
 	 *             },
 	 *             {
 	 *                type: "tag",
 	 *                name: "em",
-	 *                data: "sine qua non", ← entry subsegment
+	 *                data: "duces tecum", ←—— entry subsegment
 	 *                ~ snip ~
 	 *             }
 	 *           ]
@@ -129,62 +130,32 @@ export default class WordToJsonConverter {
 		const $ = cheerio.load(this.htmlString);
 		const cheerioResult = Array.from($("p"));
 
-		DuplicateChecker.verify(cheerioResult);
+		const summary = new Summary(this.language);
+		const allEntriesObject: AllEntriesObject = { allEntries: [] };
 
-		let summary: string[] = [];
+		for (let [index, cheerioEntry] of cheerioResult.entries()) {
+			const entry = Entry.createFromCheerio(cheerioEntry);
+
+			allEntriesObject.allEntries.push(entry.toObject());
+
+			this.dataLogger.savingJson({
+				counter: index + 1,
+				total: cheerioResult.length,
+				slug: entry.slug
+			});
+
+			summary.addTerm(entry.term);
+		}
+
 		if (options.singleJsonFile) {
-			summary = this.toSingleJsonFile(cheerioResult);
+			this.jsonHelper.saveAllEntriesAsSingleJsonFile(allEntriesObject);
 		} else {
-			summary = this.toMultipleJsonFiles(cheerioResult);
+			this.jsonHelper.saveAllEntriesAsMultipleJsonFiles(allEntriesObject);
 		}
 
+		summary.checkForDuplicates();
 		this.jsonHelper.saveSummaryAsJson(summary);
-		this.dataLogger.fullGreen(
-			`Converted HTML string to ${summary.length} JSON files.`
-		);
-	}
 
-	/**Converts a `cheerioResult` into multiple entries and persists them as JSON files.*/
-	private toMultipleJsonFiles(cheerioResult: CheerioElement[]): string[] {
-		const summary: string[] = [];
-
-		for (let [index, cheerioEntry] of cheerioResult.entries()) {
-			const entry = Entry.createFromCheerio(cheerioEntry);
-			this.jsonHelper.saveSingleEntryAsJson(entry);
-
-			this.dataLogger.savingJson({
-				counter: index + 1,
-				total: cheerioResult.length,
-				slug: entry.slug
-			});
-
-			summary.push(entry.slug);
-			// break; // temp, to show only one entry for debugging
-		}
-
-		return summary;
-	}
-
-	/**Converts a `cheerioResult` into a single object containing a list of all the entries and persists that object as a JSON file.*/
-	private toSingleJsonFile(cheerioResult: CheerioElement[]): string[] {
-		const summary: string[] = [];
-		const bigObject: bigObjectOfAllEntries = { allEntries: [] };
-
-		for (let [index, cheerioEntry] of cheerioResult.entries()) {
-			const entry = Entry.createFromCheerio(cheerioEntry);
-			bigObject.allEntries.push(entry.toObject());
-
-			this.dataLogger.savingJson({
-				counter: index + 1,
-				total: cheerioResult.length,
-				slug: entry.slug
-			});
-
-			summary.push(entry.slug);
-		}
-
-		this.jsonHelper.saveAllEntriesAsSingleJson(bigObject);
-
-		return summary;
+		// return summary;
 	}
 }

@@ -84,13 +84,17 @@ export default class MongoManager {
 		for (let filename of filenames) {
 			await this.uploadEntryFromJsonFilename(filename);
 		}
+
+		this.dataLogger.fullGreen(
+			"All entries uploaded from single JSON file to MongoDB."
+		);
 	}
 
 	private async fromSingleFile() {
 		const jsonHelper = new JsonHelper(this.language);
-		const bigObject = jsonHelper.getBigObjectFromSingleJsonFile();
+		const allEntriesObject = jsonHelper.getBigObjectFromSingleJsonFile();
 
-		for (let entryObject of bigObject.allEntries) {
+		for (let entryObject of allEntriesObject.allEntries) {
 			await this.collection.insertOne(entryObject);
 
 			this.dataLogger.uploadedEntry({

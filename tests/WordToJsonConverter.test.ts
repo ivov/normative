@@ -4,6 +4,7 @@ import { promisify } from "util";
 import WordToJsonConverter from "../data/WordToJsonConverter";
 import JsonHelper from "../data/JsonHelper";
 import Entry from "../data/Entry";
+import Summary from "../data/Summary";
 
 describe("WordToJsonConverter", () => {
 	describe("Constructor", () => {
@@ -199,17 +200,17 @@ describe("WordToJsonConverter", () => {
 			};
 
 			const makeAdHocSummary = (cheerioResult: CheerioElement[]) => {
-				const summary: string[] = [];
+				const summary = new Summary("English");
 				for (let cheerioEntry of cheerioResult) {
 					const entry = Entry.createFromCheerio(cheerioEntry);
-					summary.push(entry.slug);
+					summary.addTerm(entry.term);
 				}
 				return summary;
 			};
 
 			const cheerioResult = await getCheerioResult();
 			const summary = makeAdHocSummary(cheerioResult);
-			expect(cheerioResult.length).toEqual(summary.length);
+			expect(cheerioResult.length).toEqual(summary.getTerms().length);
 		});
 	});
 });
