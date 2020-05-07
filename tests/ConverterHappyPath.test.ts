@@ -19,8 +19,8 @@ describe("Converter", () => {
 			await myConverter.convertDocxToHtml();
 
 			// convert twice just to test both
-			myConverter.convertHtmlToJson({ multipleJsonFiles: true });
-			myConverter.convertHtmlToJson({ singleJsonFile: true });
+			myConverter.convertHtmlToJson({ toMultipleJsonFiles: true });
+			myConverter.convertHtmlToJson({ toSingleJsonFile: true });
 
 			const pathToAllVariantFile = `data/json/Spanish/aaa.json`;
 			const data = fs.readFileSync(pathToAllVariantFile);
@@ -43,7 +43,7 @@ describe("Converter", () => {
 			// populate dir
 			const myConverter = new WordToJsonConverter("English");
 			await myConverter.convertDocxToHtml();
-			myConverter.convertHtmlToJson({ multipleJsonFiles: true });
+			myConverter.convertHtmlToJson({ toMultipleJsonFiles: true });
 
 			const getFileSize = (filename: string) => {
 				const stats = fs.statSync(`data/json/English/` + filename);

@@ -122,8 +122,8 @@ export default class WordToJsonConverter {
 	 * ]
 	 *```*/
 	public convertHtmlToJson(options: {
-		singleJsonFile?: boolean;
-		multipleJsonFiles?: boolean;
+		toSingleJsonFile?: boolean;
+		toMultipleJsonFiles?: boolean;
 	}) {
 		console.log("Converting HTML to JSON...");
 
@@ -147,7 +147,7 @@ export default class WordToJsonConverter {
 			summary.addTerm(entry.term);
 		}
 
-		if (options.singleJsonFile) {
+		if (options.toSingleJsonFile) {
 			this.jsonHelper.saveAllEntriesAsSingleJsonFile(allEntriesObject);
 		} else {
 			this.jsonHelper.saveAllEntriesAsMultipleJsonFiles(allEntriesObject);

@@ -25,7 +25,7 @@ export default class MongoManager {
 		});
 		await this.client.connect();
 
-		this.dataLogger.fullGreen("Connected to MongoDB");
+		console.log("Connected to MongoDB");
 
 		this.db = this.client.db("normative");
 		this.collection =
@@ -67,14 +67,12 @@ export default class MongoManager {
 	}
 
 	public async uploadAll(options: {
-		fromSingleFile?: boolean;
-		fromMultipleFiles?: boolean;
+		fromSingleJsonFile?: boolean;
+		fromMultipleJsonFiles?: boolean;
 	}) {
-		if (options.fromMultipleFiles) {
-			await this.fromMultipleFiles();
-		} else {
-			await this.fromSingleFile();
-		}
+		options.fromSingleJsonFile
+			? await this.fromSingleFile()
+			: await this.fromMultipleFiles();
 	}
 
 	private async fromMultipleFiles() {
@@ -104,6 +102,8 @@ export default class MongoManager {
 				db: "MongoDB"
 			});
 		}
+
+		this.uploadJsonSummary();
 	}
 
 	public async uploadJsonSummary() {

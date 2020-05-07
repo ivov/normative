@@ -9,7 +9,7 @@ describe("Converter", () => {
 			);
 			await myConverter.convertDocxToHtml();
 			expect(() =>
-				myConverter.convertHtmlToJson({ multipleJsonFiles: true })
+				myConverter.convertHtmlToJson({ toMultipleJsonFiles: true })
 			).toThrow();
 		});
 
@@ -20,7 +20,7 @@ describe("Converter", () => {
 			);
 			await myConverter.convertDocxToHtml();
 			expect(() =>
-				myConverter.convertHtmlToJson({ multipleJsonFiles: true })
+				myConverter.convertHtmlToJson({ toMultipleJsonFiles: true })
 			).toThrow();
 		});
 
@@ -31,7 +31,7 @@ describe("Converter", () => {
 			);
 			await myConverter.convertDocxToHtml();
 			expect(() =>
-				myConverter.convertHtmlToJson({ multipleJsonFiles: true })
+				myConverter.convertHtmlToJson({ toMultipleJsonFiles: true })
 			).toThrow();
 		});
 
@@ -42,7 +42,7 @@ describe("Converter", () => {
 			);
 			await myConverter.convertDocxToHtml();
 			expect(() =>
-				myConverter.convertHtmlToJson({ multipleJsonFiles: true })
+				myConverter.convertHtmlToJson({ toMultipleJsonFiles: true })
 			).toThrow();
 		});
 
@@ -53,7 +53,7 @@ describe("Converter", () => {
 			);
 			await myConverter.convertDocxToHtml();
 			expect(() =>
-				myConverter.convertHtmlToJson({ multipleJsonFiles: true })
+				myConverter.convertHtmlToJson({ toMultipleJsonFiles: true })
 			).toThrow();
 		});
 
@@ -72,7 +72,7 @@ describe("Converter", () => {
 			);
 			await myConverter.convertDocxToHtml();
 			expect(() =>
-				myConverter.convertHtmlToJson({ multipleJsonFiles: true })
+				myConverter.convertHtmlToJson({ toMultipleJsonFiles: true })
 			).toThrow();
 		});
 	});

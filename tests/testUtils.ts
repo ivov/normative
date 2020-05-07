@@ -64,7 +64,7 @@ export const createSummaryFromCheerio = (cheerioResult: CheerioElement[]) => {
 export const createAllEntriesJsonFile = async () => {
 	const converter = new WordToJsonConverter("English");
 	await converter.convertDocxToHtml();
-	converter.convertHtmlToJson({ singleJsonFile: true });
+	converter.convertHtmlToJson({ toSingleJsonFile: true });
 };
 
 export const createAgreementJsonFile = async () => {
@@ -73,6 +73,6 @@ export const createAgreementJsonFile = async () => {
 		"tests/testDocx/eng_only_agreement.docx"
 	);
 	await converter.convertDocxToHtml();
-	converter.convertHtmlToJson({ multipleJsonFiles: true });
+	converter.convertHtmlToJson({ toMultipleJsonFiles: true });
 	const jsonHelper = new JsonHelper("English");
 };
