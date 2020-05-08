@@ -1,7 +1,7 @@
 import fs from "fs";
-import WordToJsonConverter from "../data/WordToJsonConverter";
+import WordToJsonConverter from "../conversion/WordToJsonConverter";
 import { promisify } from "util";
-import JsonHelper from "../data/JsonHelper";
+import JsonHelper from "../utils/JsonHelper";
 import {
 	allVariantResult,
 	getCheerioResult,
@@ -22,7 +22,7 @@ describe("Converter", () => {
 			myConverter.convertHtmlToJson({ toMultipleJsonFiles: true });
 			myConverter.convertHtmlToJson({ toSingleJsonFile: true });
 
-			const pathToAllVariantFile = `data/json/Spanish/aaa.json`;
+			const pathToAllVariantFile = `conversion/json/Spanish/aaa.json`;
 			const data = fs.readFileSync(pathToAllVariantFile);
 			const object = JSON.parse(data.toString());
 
@@ -46,7 +46,7 @@ describe("Converter", () => {
 			myConverter.convertHtmlToJson({ toMultipleJsonFiles: true });
 
 			const getFileSize = (filename: string) => {
-				const stats = fs.statSync(`data/json/English/` + filename);
+				const stats = fs.statSync(`conversion/json/English/` + filename);
 				return stats["size"]; // in bytes
 			};
 

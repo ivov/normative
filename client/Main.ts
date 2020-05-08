@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron";
-import MongoManager from "../data/MongoManager";
+import MongoDB from "../db/MongoDB";
 
-export default class Client {
+export default class Main {
 	window: BrowserWindow | null;
 
 	constructor() {
@@ -13,20 +13,20 @@ export default class Client {
 
 	private createWindow = () => {
 		this.window = new BrowserWindow({
-			show: false, // enables `ready-to-show` event
 			width: 800,
 			height: 600,
+			resizable: false,
 			webPreferences: { nodeIntegration: true }
 		});
 		this.window.loadURL("file://" + process.cwd() + "/client/index.html");
-		this.window.on("ready-to-show", this.getTerm);
+		this.window.webContents.on("did-finish-load", this.getTerm);
 
 		this.window.on("closed", () => (this.window = null));
 		this.window.webContents.openDevTools();
 	};
 
 	private async getTerm() {
-		const mongoManager = new MongoManager("English");
+		const mongoManager = new MongoDB("English");
 		await mongoManager.init();
 		const term = await mongoManager.getEntryDocument("agreement");
 		await mongoManager.disconnect();

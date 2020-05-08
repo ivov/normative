@@ -2,10 +2,10 @@ import fs from "fs";
 import mammoth from "mammoth";
 import cheerio from "cheerio";
 import dotenv from "dotenv";
-import Entry from "./Entry";
-import DataLogger from "./DataLogger";
-import JsonHelper from "./JsonHelper";
-import Summary from "./Summary";
+import Entry from "../db/models/Entry";
+import Logger from "../logs/Logger";
+import JsonHelper from "../utils/JsonHelper";
+import Summary from "../db/models/Summary";
 // import { XmlEntities } from "html-entities";
 
 /** Responsible for converting the entries in a DOCX file into JSON, either as multiple JSON files or as a single JSON file.*/
@@ -13,7 +13,7 @@ export default class WordToJsonConverter {
 	public language: AvailableLanguages;
 	public filepath: string;
 	public htmlString: string;
-	private dataLogger: DataLogger;
+	private dataLogger: Logger;
 	private jsonHelper: JsonHelper;
 	// private htmlEncoder: any = new XmlEntities(); // no need to encode for now
 
@@ -25,9 +25,7 @@ export default class WordToJsonConverter {
 			: this.getFilePathFromDotEnv();
 
 		this.dataLogger =
-			language === "English"
-				? new DataLogger("English")
-				: new DataLogger("Spanish");
+			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.jsonHelper =
 			language === "English"

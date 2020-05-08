@@ -1,14 +1,13 @@
 import fs from "fs";
 import { promisify } from "util";
-import JsonHelper from "../data/JsonHelper";
-import Summary from "../data/Summary";
+import JsonHelper from "../utils/JsonHelper";
+import Summary from "../db/models/Summary";
 import {
 	createAndSaveSummaryFile,
 	createAllEntriesJsonFile,
 	createAgreementJsonFile
 } from "./testUtils";
-import WordToJsonConverter from "../data/WordToJsonConverter";
-import Entry from "../data/Entry";
+import Entry from "../db/models/Entry";
 
 describe("JsonHelper", () => {
 	const jsonHelper = new JsonHelper("English");
@@ -31,26 +30,26 @@ describe("JsonHelper", () => {
 	});
 
 	test("should fail at getting the summary of entries if it does not exist", async () => {
-		const summaryPath = "data/json/English/!summaryEnglish.json";
+		const summaryPath = "conversion/json/English/!summaryEnglish.json";
 
 		if (fs.existsSync(summaryPath)) {
 			const rename = promisify(fs.rename);
 			await rename(
-				"data/json/English/!summaryEnglish.json",
-				"data/json/!summaryEnglish.json"
+				"conversion/json/English/!summaryEnglish.json",
+				"conversion/json/!summaryEnglish.json"
 			); // put elsewhere
 
 			expect(() => jsonHelper.getSummary()).toThrow();
 
 			await rename(
-				"data/json/!summaryEnglish.json",
-				"data/json/English/!summaryEnglish.json"
+				"conversion/json/!summaryEnglish.json",
+				"conversion/json/English/!summaryEnglish.json"
 			); // put back
 		}
 	});
 
 	describe("should convert a JSON file into an entry", () => {
-		const agreementPath = `data/json/English/agreement.json`;
+		const agreementPath = `conversion/json/English/agreement.json`;
 
 		if (fs.existsSync(agreementPath)) {
 			const entry = jsonHelper.convertJsonToEntry("agreement.json");

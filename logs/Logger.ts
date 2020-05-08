@@ -2,11 +2,11 @@ import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import cheerio from "cheerio";
-import { LOOSE_FIELD_STRINGS } from "./constants";
-import WordToJsonConverter from "./WordToJsonConverter";
+import { LOOSE_FIELD_STRINGS } from "../utils/constants";
+import WordToJsonConverter from "../conversion/WordToJsonConverter";
 
 /** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoManager`, and `FirestoreManager`.*/
-export default class DataLogger {
+export default class Logger {
 	private language: AvailableLanguages;
 
 	constructor(language: AvailableLanguages) {
@@ -98,7 +98,7 @@ export default class DataLogger {
 	}
 
 	public logEntry(filename: string) {
-		const sourcePath = path.join("data", "json", this.language, filename);
+		const sourcePath = path.join("conversion", "json", this.language, filename);
 		const object = JSON.parse(fs.readFileSync(sourcePath).toString());
 
 		// const decodeHtml = (html: string) => { // no need to decode for now

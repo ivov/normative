@@ -1,6 +1,6 @@
 import minimist from "minimist";
-import WordToJsonConverter from "./WordToJsonConverter";
-import MongoManager from "./MongoManager";
+import WordToJsonConverter from "../conversion/WordToJsonConverter";
+import MongoDB from "../db/MongoDB";
 import JsonHelper from "./JsonHelper";
 
 /**Responsible for receiving CLI arguments and calling the corresponding functions.
@@ -19,7 +19,7 @@ import JsonHelper from "./JsonHelper";
  * - `--deleteMongo`
  * Delete all documents in the relevant MongoDB collection.
  */
-export default class CliUtility {
+export default class Cli {
 	args: minimist.ParsedArgs;
 
 	constructor() {
@@ -76,7 +76,7 @@ export default class CliUtility {
 	}
 
 	private async uploadMongo() {
-		const mongoManager = new MongoManager("English");
+		const mongoManager = new MongoDB("English");
 		await mongoManager.init();
 
 		await mongoManager.uploadAll(
@@ -90,7 +90,7 @@ export default class CliUtility {
 
 	/**Deletes all documents in the relevant mongo DB collection.*/
 	private async deleteMongo() {
-		const mongoManager = new MongoManager(this.args.language);
+		const mongoManager = new MongoDB(this.args.language);
 		await mongoManager.init();
 		await mongoManager.deleteAllDocuments();
 		await mongoManager.disconnect();

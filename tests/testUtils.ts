@@ -1,8 +1,8 @@
 import cheerio from "cheerio";
-import WordToJsonConverter from "../data/WordToJsonConverter";
-import Summary from "../data/Summary";
-import Entry from "../data/Entry";
-import JsonHelper from "../data/JsonHelper";
+import WordToJsonConverter from "../conversion/WordToJsonConverter";
+import Summary from "../db/models/Summary";
+import Entry from "../db/models/Entry";
+import JsonHelper from "../utils/JsonHelper";
 
 // Conversion result for single entry at `all_variants_unit.docx`.
 export const allVariantResult = {
@@ -74,5 +74,4 @@ export const createAgreementJsonFile = async () => {
 	);
 	await converter.convertDocxToHtml();
 	converter.convertHtmlToJson({ toMultipleJsonFiles: true });
-	const jsonHelper = new JsonHelper("English");
 };

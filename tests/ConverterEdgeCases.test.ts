@@ -1,4 +1,4 @@
-import WordToJsonConverter from "../data/WordToJsonConverter";
+import WordToJsonConverter from "../conversion/WordToJsonConverter";
 
 describe("Converter", () => {
 	describe("Conversion process", () => {

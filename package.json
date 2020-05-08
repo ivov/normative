@@ -13,7 +13,7 @@
 		"data:djs": "tsc && node build/main.js --deleteJson --language Spanish",
 		"data:dme": "tsc && node build/main.js --deleteMongo --language English",
 		"data:dms": "tsc && node build/main.js --deleteMongo --language Spanish",
-		"client": "tsc && electron build/client/startup.js",
+		"client": "tsc && electron build/client/init.js",
 		"test": "jest --verbose --maxWorkers=1 --coverage --silent"
 	},
 	"keywords": [

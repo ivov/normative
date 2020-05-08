@@ -1,17 +1,15 @@
 import dotenv from "dotenv";
-import JsonHelper from "./JsonHelper";
-import DataLogger from "./DataLogger";
+import JsonHelper from "../utils/JsonHelper";
+import Logger from "../logs/Logger";
 
-export default class FirestoreManager {
+export default class FirestoreDB {
 	private language: AvailableLanguages;
 	private jsonHelper: JsonHelper;
-	private dataLogger: DataLogger;
+	private dataLogger: Logger;
 
 	constructor(language: AvailableLanguages) {
 		this.dataLogger =
-			language === "English"
-				? new DataLogger("English")
-				: new DataLogger("Spanish");
+			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.jsonHelper =
 			language === "English"

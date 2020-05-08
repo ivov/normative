@@ -1,30 +1,30 @@
 import fs from "fs";
 import { promisify } from "util";
-import WordToJsonConverter from "../data/WordToJsonConverter";
+import WordToJsonConverter from "../conversion/WordToJsonConverter";
 
 describe("Converter", () => {
 	describe("Constructor", () => {
 		const rename = promisify(fs.rename);
 
 		test("should fail when the dotenv file does not exist", async () => {
-			await rename(".env", "data/.env"); // put elsewhere
+			await rename(".env", "conversion/.env"); // put elsewhere
 
 			expect(() => new WordToJsonConverter("English")).toThrow();
 
-			await rename("data/.env", ".env"); // put back
+			await rename("conversion/.env", ".env"); // put back
 		});
 
 		test("should fail when the dotenv file has no DOCX file path", async () => {
 			const writeFile = promisify(fs.writeFile);
 			const deleteFile = promisify(fs.unlink);
 
-			await rename(".env", "data/.env"); // put elsewhere
+			await rename(".env", "conversion/.env"); // put elsewhere
 			await writeFile(".env", ""); // create empty
 
 			expect(() => new WordToJsonConverter("English")).toThrow();
 
 			await deleteFile(".env"); // delete empty
-			await rename("data/.env", ".env"); // put back
+			await rename("conversion/.env", ".env"); // put back
 		});
 
 		test("should set the language per arg and filepath per env var", () => {
@@ -45,8 +45,8 @@ describe("Converter", () => {
 			expect(() => new WordToJsonConverter("English")).toThrow();
 			expect(() => new WordToJsonConverter("Spanish")).toThrow();
 
-			process.env.DOCX_PATH_ENGLISH = "data/docx/sample_eng.docx"; // fix
-			process.env.DOCX_PATH_SPANISH = "data/docx/sample_spa.docx"; // fix
+			process.env.DOCX_PATH_ENGLISH = "conversion/docx/sample_eng.docx"; // fix
+			process.env.DOCX_PATH_SPANISH = "conversion/docx/sample_spa.docx"; // fix
 		});
 	});
 });

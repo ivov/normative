@@ -1,20 +1,18 @@
 import { MongoClient, Db, Collection } from "mongodb";
-import DataLogger from "./DataLogger";
-import JsonHelper from "./JsonHelper";
+import Logger from "../logs/Logger";
+import JsonHelper from "../utils/JsonHelper";
 
-export default class MongoManager {
+export default class MongoDB {
 	private client: MongoClient;
 	private db: Db;
 	private language: AvailableLanguages;
 	private collection: Collection;
-	private dataLogger: DataLogger;
+	private dataLogger: Logger;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 		this.dataLogger =
-			language === "English"
-				? new DataLogger("English")
-				: new DataLogger("Spanish");
+			language === "English" ? new Logger("English") : new Logger("Spanish");
 	}
 
 	/** Initialize client, open connection and set `db`, `language` and `collection` references.*/
@@ -38,7 +36,7 @@ export default class MongoManager {
 		await this.client.close();
 	}
 
-	/**Set a unique index on the active collection to prevent duplicate terms. To be set only once per collection.*/
+	/**Sets a unique index on the active collection to prevent duplicate terms. Used only once per collection.*/
 	private async setUniqueIndex() {
 		await this.collection.createIndex("term", { unique: true });
 		this.dataLogger.fullGreen(

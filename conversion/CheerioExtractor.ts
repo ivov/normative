@@ -1,4 +1,4 @@
-import { SUPERSCRIPT } from "./constants";
+import { SUPERSCRIPT } from "../utils/constants";
 
 /**Responsible for extracting text from a `cheerioEntry`, either tagged snippets (namely: `term`, `translation`, `definition`, `note`) or loose snippets (i.e. untagged, namely: `note`, `definition`, `similarTo`, `classifiedUnder`, `classifiedInto`. `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto`, `reference`.*/
 export default class CheerioExtractor {

@@ -1,5 +1,5 @@
 import faker from "faker";
-import Entry from "../data/Entry";
+import Entry from "../db/models/Entry";
 
 describe("Entry", () => {
 	describe("Constructor", () => {

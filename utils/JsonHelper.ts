@@ -2,13 +2,13 @@ import path from "path";
 import fs from "fs";
 import { promisify } from "util";
 import prettyStringify from "json-stringify-pretty-compact";
-import DataLogger from "./DataLogger";
-import Entry from "./Entry";
-import Summary from "./Summary";
+import Logger from "../logs/Logger";
+import Entry from "../db/models/Entry";
+import Summary from "../db/models/Summary";
 
 export default class JsonHelper {
 	private language: AvailableLanguages;
-	private dataLogger: DataLogger;
+	private dataLogger: Logger;
 	private jsonDir: string;
 	public allEntriesFilename: string;
 	private summaryFilename: string;
@@ -16,12 +16,10 @@ export default class JsonHelper {
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 
-		this.jsonDir = path.join("data", "json", this.language);
+		this.jsonDir = path.join("conversion", "json", this.language);
 
 		this.dataLogger =
-			language === "English"
-				? new DataLogger("English")
-				: new DataLogger("Spanish");
+			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.allEntriesFilename =
 			this.language === "English"
@@ -42,12 +40,7 @@ export default class JsonHelper {
 	}
 
 	public getBigObjectFromSingleJsonFile(): AllEntriesObject {
-		const sourcePath = path.join(
-			"data",
-			"json",
-			this.language,
-			this.allEntriesFilename
-		);
+		const sourcePath = path.join(this.jsonDir, this.allEntriesFilename);
 		return JSON.parse(fs.readFileSync(sourcePath).toString());
 	}
 

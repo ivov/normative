@@ -3,13 +3,10 @@ module.exports = {
 	transform: {
 		"^.+\\.ts$": "ts-jest"
 	},
-	// collectCoverage: true,
-	// collectCoverageFrom: ["data/**/*.ts"],
 	testEnvironment: "node",
 	globals: {
 		"ts-jest": {
 			isolatedModules: true // speeds up ts-jest
 		}
-	},
-	coveragePathIgnorePatterns: ["<rootDir>/data/DataLogger.ts"]
+	}
 };

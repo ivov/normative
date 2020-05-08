@@ -1,4 +1,4 @@
-import JsonHelper from "./JsonHelper";
+import JsonHelper from "../../utils/JsonHelper";
 
 /**Responsible for managing the summary (i.e. the list of all unique terms) for each language in the dictionary.*/
 export default class Summary {

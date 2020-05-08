@@ -1,10 +1,9 @@
-import prettyStringify from "json-stringify-pretty-compact";
 import {
 	SUPERSCRIPT,
 	LOOSE_FIELD_KEYS,
 	LOOSE_FIELD_SYMBOLS
-} from "./constants";
-import CheerioExtractor from "./CheerioExtractor";
+} from "../../utils/constants";
+import CheerioExtractor from "../../conversion/CheerioExtractor";
 
 /**Represents an entry in the dictionary. Enables conversion into JSON string and into JS object. Enables static creation from a `cheerioEntry`, one of the constituents of a `cheerioResult`.*/
 export default class Entry {
