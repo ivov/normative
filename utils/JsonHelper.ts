@@ -8,7 +8,7 @@ import Summary from "../db/models/Summary";
 
 export default class JsonHelper {
 	private language: AvailableLanguages;
-	private dataLogger: Logger;
+	private logger: Logger;
 	private jsonDir: string;
 	public allEntriesFilename: string;
 	private summaryFilename: string;
@@ -18,7 +18,7 @@ export default class JsonHelper {
 
 		this.jsonDir = path.join("conversion", "json", this.language);
 
-		this.dataLogger =
+		this.logger =
 			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.allEntriesFilename =
@@ -134,6 +134,6 @@ export default class JsonHelper {
 			fs.unlinkSync(path.join(this.jsonDir, filename));
 		});
 
-		this.dataLogger.fullGreen(`Deleted all JSON files in ${this.language}`);
+		this.logger.fullGreen(`Deleted all JSON files in ${this.language}`);
 	}
 }

@@ -1,17 +1,21 @@
-import MongoDB from "../db/MongoDB";
+const ipcRenderer = require("electron").ipcRenderer;
 
-class Renderer {
-	public async getTerm() {
-		const mongoManager = new MongoDB("English");
-		await mongoManager.init();
+ipcRenderer.send("summary-channel");
 
-		const term = await mongoManager.getEntryDocument("agreement");
+const button = document.getElementById("getTermButton") as HTMLElement;
+const entryDiv = document.getElementById("entry") as HTMLElement;
 
-		await mongoManager.disconnect();
-		console.log(term);
-	}
-}
+// button.addEventListener("click", () => {
+// 	ipcRenderer.send("get-term", "agreement");
+// });
 
-const renderer = new Renderer();
+button.addEventListener("click", () => {
+	ipcRenderer.send("term-channel", "agreement");
+});
 
-renderer.getTerm();
+ipcRenderer.on("get-term", (event, arg) => {
+	entryDiv.innerHTML = encode(arg);
+});
+
+const encode = (str: string) =>
+	str.replace(/[\u00A0-\u9999<>\&]/gim, i => "&#" + i.charCodeAt(0) + ";");

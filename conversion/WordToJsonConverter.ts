@@ -13,7 +13,7 @@ export default class WordToJsonConverter {
 	public language: AvailableLanguages;
 	public filepath: string;
 	public htmlString: string;
-	private dataLogger: Logger;
+	private logger: Logger;
 	private jsonHelper: JsonHelper;
 	// private htmlEncoder: any = new XmlEntities(); // no need to encode for now
 
@@ -24,7 +24,7 @@ export default class WordToJsonConverter {
 			? specialFilePath
 			: this.getFilePathFromDotEnv();
 
-		this.dataLogger =
+		this.logger =
 			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.jsonHelper =
@@ -84,7 +84,7 @@ export default class WordToJsonConverter {
 			"§ Classified into:"
 		); // This makes the initial symbol unique to facilitate later recognition. (`Classified under` uses `#` as well.)
 
-		this.dataLogger.fullGreen("Converted DOCX file to HTML string.");
+		this.logger.fullGreen("Converted DOCX file to HTML string.");
 	}
 
 	/**Converts the HTML string in the `htmlString` class field into `cheerioResult`, converts `cheerioResult` into entries and saves entries into a single JSON file or multiple JSON files.
@@ -136,7 +136,7 @@ export default class WordToJsonConverter {
 
 			allEntriesObject.allEntries.push(entry.toObject());
 
-			this.dataLogger.savingJson({
+			this.logger.savingJson({
 				counter: index + 1,
 				total: cheerioResult.length,
 				slug: entry.slug

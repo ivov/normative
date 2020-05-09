@@ -3,12 +3,13 @@ import JsonHelper from "../utils/JsonHelper";
 import Logger from "../logs/Logger";
 
 export default class FirestoreDB {
+	// TODO: implement DB interface?
 	private language: AvailableLanguages;
 	private jsonHelper: JsonHelper;
-	private dataLogger: Logger;
+	private logger: Logger;
 
 	constructor(language: AvailableLanguages) {
-		this.dataLogger =
+		this.logger =
 			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.jsonHelper =
@@ -48,7 +49,7 @@ export default class FirestoreDB {
 				.doc(entry.slug)
 				.set({ ...entry }, { merge: true });
 
-			this.dataLogger.uploadedEntry({
+			this.logger.uploadedEntry({
 				term: entry.term,
 				collection: db.collection(language + "-terms"),
 				db: "Firestore"
@@ -62,7 +63,7 @@ export default class FirestoreDB {
 			.doc(language + "-summary")
 			.set({ ...summaryOfEntries });
 
-		this.dataLogger.uploadedEntry({
+		this.logger.uploadedEntry({
 			term: _,
 			collection: db.collection("Summaries"),
 			db: "Firestore"

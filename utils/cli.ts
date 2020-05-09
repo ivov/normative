@@ -76,24 +76,24 @@ export default class Cli {
 	}
 
 	private async uploadMongo() {
-		const mongoManager = new MongoDB("English");
-		await mongoManager.init();
+		const db = new MongoDB("English");
+		await db.init();
 
-		await mongoManager.uploadAll(
+		await db.uploadAll(
 			this.args.uploadMongo === "single"
 				? { fromSingleJsonFile: true }
 				: { fromMultipleJsonFiles: true }
 		);
 
-		await mongoManager.disconnect();
+		await db.disconnect();
 	}
 
 	/**Deletes all documents in the relevant mongo DB collection.*/
 	private async deleteMongo() {
-		const mongoManager = new MongoDB(this.args.language);
-		await mongoManager.init();
-		await mongoManager.deleteAllDocuments();
-		await mongoManager.disconnect();
+		const db = new MongoDB(this.args.language);
+		await db.init();
+		await db.deleteAllDocuments();
+		await db.disconnect();
 	}
 
 	/**Deletes all documents in the relevant JSON directory.*/

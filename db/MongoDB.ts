@@ -1,17 +1,18 @@
 import { MongoClient, Db, Collection } from "mongodb";
 import Logger from "../logs/Logger";
 import JsonHelper from "../utils/JsonHelper";
+import DB from "./DB.interface";
 
-export default class MongoDB {
+export default class MongoDB implements DB {
 	private client: MongoClient;
 	private db: Db;
 	private language: AvailableLanguages;
-	private collection: Collection;
-	private dataLogger: Logger;
+	public collection: Collection;
+	private logger: Logger;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
-		this.dataLogger =
+		this.logger =
 			language === "English" ? new Logger("English") : new Logger("Spanish");
 	}
 
@@ -39,9 +40,7 @@ export default class MongoDB {
 	/**Sets a unique index on the active collection to prevent duplicate terms. Used only once per collection.*/
 	private async setUniqueIndex() {
 		await this.collection.createIndex("term", { unique: true });
-		this.dataLogger.fullGreen(
-			"Set unique index to: " + this.collection.namespace
-		);
+		this.logger.fullGreen("Set unique index to: " + this.collection.namespace);
 	}
 
 	public async uploadEntryFromJsonFilename(filename: string) {
@@ -57,7 +56,7 @@ export default class MongoDB {
 				throw Error("MongoDB cannot accept duplicate term: " + term);
 		}
 
-		this.dataLogger.uploadedEntry({
+		this.logger.uploadedEntry({
 			term: object.term,
 			collection: this.collection.namespace,
 			db: "MongoDB"
@@ -81,7 +80,7 @@ export default class MongoDB {
 			await this.uploadEntryFromJsonFilename(filename);
 		}
 
-		this.dataLogger.uploadedAllEntries({
+		this.logger.uploadedAllEntries({
 			collection: this.collection.namespace,
 			db: "MongoDB"
 		});
@@ -94,7 +93,7 @@ export default class MongoDB {
 		for (let entryObject of allEntriesObject.allEntries) {
 			await this.collection.insertOne(entryObject);
 
-			this.dataLogger.uploadedEntry({
+			this.logger.uploadedEntry({
 				term: entryObject.term,
 				collection: this.collection.namespace,
 				db: "MongoDB"
@@ -115,7 +114,7 @@ export default class MongoDB {
 
 		await this.collection.insertOne(object);
 
-		this.dataLogger.uploadedEntry({
+		this.logger.uploadedEntry({
 			term: object.term, // "!summaryEnglish" or "!summarySpanish"
 			collection: this.collection.namespace,
 			db: "MongoDB"
@@ -133,14 +132,13 @@ export default class MongoDB {
 	public async getSummaryDocument() {
 		const summaryTerm =
 			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
-
 		return await this.collection.findOne({ term: summaryTerm });
 	}
 
-	public async deleteDocument(targetTerm: string) {
+	public async deleteEntryDocument(targetTerm: string) {
 		await this.collection.deleteOne({ term: targetTerm });
 
-		this.dataLogger.deletedEntry({
+		this.logger.deletedEntry({
 			term: targetTerm,
 			collection: this.collection.namespace,
 			db: "MongoDB"
@@ -149,7 +147,7 @@ export default class MongoDB {
 
 	public async deleteAllDocuments() {
 		await this.collection.deleteMany({});
-		this.dataLogger.deletedAllEntries({
+		this.logger.deletedAllEntries({
 			collection: this.collection.namespace,
 			db: "MongoDB"
 		});

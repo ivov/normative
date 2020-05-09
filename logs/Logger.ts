@@ -5,7 +5,7 @@ import cheerio from "cheerio";
 import { LOOSE_FIELD_STRINGS } from "../utils/constants";
 import WordToJsonConverter from "../conversion/WordToJsonConverter";
 
-/** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoManager`, and `FirestoreManager`.*/
+/** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoDB`, and `FirestoreDB`.*/
 export default class Logger {
 	private language: AvailableLanguages;
 
