@@ -11,26 +11,22 @@ import Summary from "../db/models/Summary";
 /** Responsible for converting the entries in a DOCX file into JSON, either as multiple JSON files or as a single JSON file.*/
 export default class WordToJsonConverter {
 	public language: AvailableLanguages;
-	public filepath: string;
-	public htmlString: string;
 	private logger: Logger;
 	private jsonHelper: JsonHelper;
+
+	public filepath: string;
+	public htmlString: string;
+
 	// private htmlEncoder: any = new XmlEntities(); // no need to encode for now
 
 	constructor(language: AvailableLanguages, specialFilePath?: string) {
 		this.language = language;
+		this.logger = new Logger(language);
+		this.jsonHelper = new JsonHelper(language);
 
 		this.filepath = specialFilePath
 			? specialFilePath
 			: this.getFilePathFromDotEnv();
-
-		this.logger =
-			language === "English" ? new Logger("English") : new Logger("Spanish");
-
-		this.jsonHelper =
-			language === "English"
-				? new JsonHelper("English")
-				: new JsonHelper("Spanish");
 	}
 
 	private getFilePathFromDotEnv(): string {
@@ -84,7 +80,7 @@ export default class WordToJsonConverter {
 			"§ Classified into:"
 		); // This makes the initial symbol unique to facilitate later recognition. (`Classified under` uses `#` as well.)
 
-		this.logger.fullGreen("Converted DOCX file to HTML string.");
+		this.logger.highlight("Converted DOCX file to HTML string.", "green");
 	}
 
 	/**Converts the HTML string in the `htmlString` class field into `cheerioResult`, converts `cheerioResult` into entries and saves entries into a single JSON file or multiple JSON files.
@@ -139,7 +135,7 @@ export default class WordToJsonConverter {
 			this.logger.savingJson({
 				counter: index + 1,
 				total: cheerioResult.length,
-				slug: entry.slug
+				term: entry.term
 			});
 
 			summary.addTerm(entry.term);
@@ -153,5 +149,10 @@ export default class WordToJsonConverter {
 
 		summary.checkForDuplicates();
 		this.jsonHelper.saveSummaryAsJson(summary);
+
+		this.logger.highlight(
+			`Converted ${cheerioResult.length} entries in ${this.language} to JSON.`,
+			"green"
+		);
 	}
 }

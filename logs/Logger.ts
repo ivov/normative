@@ -5,102 +5,73 @@ import cheerio from "cheerio";
 import { LOOSE_FIELD_STRINGS } from "../utils/constants";
 import WordToJsonConverter from "../conversion/WordToJsonConverter";
 
-/** Responsible for logging messages for DB operations in `WordToJsonConverter`, `MongoDB`, and `FirestoreDB`.*/
+/** Responsible for logging operations in `WordToJsonConverter`, `MongoDB`, and `FirestoreDB`.*/
 export default class Logger {
-	private language: AvailableLanguages;
+	public language: AvailableLanguages;
+	public dbName: string; // optionally set by DB during init
+	public collectionName: string; // optionally set by DB during init
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 	}
 
-	public fullRed(errorMessage: string) {
-		console.log(chalk.keyword("red").inverse(errorMessage));
-	}
-
-	public fullGreen(message: string) {
-		console.log(chalk.keyword("green").inverse(message + "\n"));
+	public highlight(message: string, color: string) {
+		console.log(chalk.keyword(color).inverse(message + "\n"));
 	}
 
 	public savingJson({
 		counter,
 		total,
-		slug
+		term
 	}: {
 		counter: number;
 		total: number;
-		slug: string;
+		term: string;
 	}) {
 		const progress = ((counter * 100) / total).toFixed(1).toString() + "%";
-		let displaySlug = slug.length < 40 ? slug : slug.slice(0, 40) + "...";
+		let displayTerm = term.length < 40 ? term : term.slice(0, 40) + "...";
 		console.log(
-			displaySlug +
-				counter.toString().padStart(50 - displaySlug.length) +
+			displayTerm +
+				counter.toString().padStart(50 - displayTerm.length) +
 				progress.padStart(10)
 		);
 	}
 
-	public uploadedAll({ collection, db }: { collection: string; db: string }) {
+	public uploadedAll() {
 		console.log(
-			`Uploaded summary and all entries to ${db} collection ${chalk.bold(
-				collection
+			`Uploaded summary and all entries to ${
+				this.dbName
+			} collection ${chalk.bold(this.collectionName)}`
+		);
+	}
+
+	public uploadedOne(term: string) {
+		console.log(
+			`Uploaded ${chalk.bold(term)} to ${this.dbName} collection ${chalk.bold(
+				this.collectionName
 			)}`
 		);
 	}
 
-	public uploadedOne({
-		term,
-		collection,
-		db
-	}: {
-		term: string;
-		collection: string;
-		db: string;
-	}) {
+	public deletedOne(term: string) {
 		console.log(
-			`Uploaded ${chalk.bold(term)} to ${db} collection ${chalk.bold(
-				collection
+			`Deleted ${chalk.bold(term)} from ${this.dbName} collection ${chalk.bold(
+				this.collectionName
 			)}`
 		);
 	}
 
-	public deletedEntry({
-		term,
-		collection,
-		db
-	}: {
-		term: string;
-		collection: string;
-		db: string;
-	}) {
+	public deletedAllEntries() {
 		console.log(
-			`Deleted ${chalk.bold(term)} from ${db} collection ${chalk.bold(
-				collection
+			`Deleted all entries from ${this.dbName} collection ${chalk.bold(
+				this.collectionName
 			)}`
-		);
-	}
-
-	public deletedAllEntries({
-		collection,
-		db
-	}: {
-		collection: string;
-		db: string;
-	}) {
-		console.log(
-			`Deleted all entries from ${db} collection ${chalk.bold(collection)}`
 		);
 	}
 
 	public logEntry(filename: string) {
 		const sourcePath = path.join("conversion", "json", this.language, filename);
 		const object = JSON.parse(fs.readFileSync(sourcePath).toString());
-
-		// const decodeHtml = (html: string) => { // no need to decode for now
-		// 	return html
-		// 		.replace(/&amp;/g, "&")
-		// 		.replace(/&lt;/g, "<")
-		// 		.replace(/&gt;/g, ">");
-		// };
 
 		// main fields
 		console.log(
@@ -116,7 +87,7 @@ export default class Logger {
 			console.log(chalk.green(object.note));
 		}
 
-		// similarTo, separated from other basic link fields because of order
+		// `similarTo`, separated from other basic link fields because of `similarTo` goes first
 		if (object.similarTo !== undefined) {
 			console.log(
 				chalk.magenta(
@@ -173,8 +144,9 @@ export default class Logger {
 		const $ = cheerio.load(converter.htmlString);
 		const cheerioResult = $("p");
 
-		this.fullGreen(
-			`Number of DOC/HTML entries in ${converter.language}: ${cheerioResult.length}`
+		this.highlight(
+			`Number of DOC/HTML entries in ${converter.language}: ${cheerioResult.length}`,
+			"green"
 		);
 	}
 }

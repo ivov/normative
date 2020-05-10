@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
+import "firebase/firestore"; // required for side effects
+import firebase from "firebase";
 import JsonHelper from "../utils/JsonHelper";
 import Logger from "../logs/Logger";
-import firebase from "firebase";
-import "firebase/firestore"; // required for side effects
 import DB from "./DB.interface";
+import { SUMMARY_TERM } from "../utils/constants";
 
 export default class FirestoreDB implements DB {
 	private language: AvailableLanguages;
@@ -12,17 +13,13 @@ export default class FirestoreDB implements DB {
 
 	private db: firebase.firestore.Firestore;
 	private collection: firebase.firestore.CollectionReference;
+	private dbName = "FirestoreDB";
+	private collectionName: string;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
-
-		this.logger =
-			language === "English" ? new Logger("English") : new Logger("Spanish");
-
-		this.jsonHelper =
-			language === "English"
-				? new JsonHelper("English")
-				: new JsonHelper("Spanish");
+		this.jsonHelper = new JsonHelper(language);
+		this.logger = new Logger(language);
 	}
 
 	init() {
@@ -41,15 +38,16 @@ export default class FirestoreDB implements DB {
 				? this.db.collection("EnglishEntries")
 				: this.db.collection("SpanishEntries");
 
-		console.log("Connected to Firestore");
+		this.collectionName = this.collection.id;
+
+		this.logger.dbName = this.dbName;
+		this.logger.collectionName = this.collectionName;
+
+		this.logger.highlight("Connected to Firestore", "green");
 	}
 
 	disconnect() {
 		firebase.database().goOffline();
-	}
-
-	getCollectionName(): string {
-		return this.collection.id;
 	}
 
 	/**Removes from a term the characters that are disallowed in a Firestore document name.*/
@@ -79,11 +77,7 @@ export default class FirestoreDB implements DB {
 			// `db.collection.doc(x).set({y}, {merge: true})` overwrites section of document
 			// `db.collection.add({y})` adds new document
 
-			this.logger.uploadedOne({
-				term: entryObject.term,
-				collection: this.getCollectionName(),
-				db: "FirestoreDB"
-			});
+			this.logger.uploadedOne(entryObject.term);
 		}
 
 		await this.uploadSummary();
@@ -95,35 +89,17 @@ export default class FirestoreDB implements DB {
 		for (let filename of filenames) {
 			const object = this.jsonHelper.convertJsonToObject(filename);
 			await this.collection.doc(this.slugify(object.term)).set(object);
-
-			this.logger.uploadedOne({
-				term: object.term,
-				collection: this.getCollectionName(),
-				db: "FirestoreDB"
-			});
+			this.logger.uploadedOne(object.term);
 		}
 
-		this.logger.uploadedAll({
-			collection: this.getCollectionName(),
-			db: "FirestoreDB"
-		});
+		this.logger.uploadedAll();
 	}
 
 	public async uploadSummary() {
-		const filename =
-			this.language === "English"
-				? "!summaryEnglish.json"
-				: "!summarySpanish.json";
-
-		const summaryObject = this.jsonHelper.convertJsonToObject(filename);
-
-		await this.collection.doc(summaryObject.term).set(summaryObject);
-
-		this.logger.uploadedOne({
-			term: summaryObject.term, // "!summaryEnglish" or "!summarySpanish"
-			collection: this.getCollectionName(),
-			db: "FirestoreDB"
-		});
+		const summaryFilename = SUMMARY_TERM[this.language] + ".json";
+		const summaryObject = this.jsonHelper.convertJsonToObject(summaryFilename);
+		await this.collection.doc(summaryObject.term).set(summaryObject); // no need to slugify `summaryTerm`
+		this.logger.uploadedOne(summaryObject.term);
 	}
 
 	/**Retrieves all the documents (entries and summary) in a FirestoreDB collection as an array of objects.*/
@@ -133,16 +109,15 @@ export default class FirestoreDB implements DB {
 	}
 
 	/**Retrieves a document entry in a FirestoreDB collection as an object.*/
-	public async getEntry(targetTerm: string) {
-		const snapshot = await this.collection.doc(this.slugify(targetTerm)).get();
+	public async getEntry(term: string) {
+		const snapshot = await this.collection.doc(this.slugify(term)).get();
 		return snapshot.data();
 	}
 
 	/**Retrieves a summary entry in a FirestoreDB collection as an object.*/
 	public async getSummary() {
-		const summaryTerm =
-			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
-		const snapshot = await this.collection.doc(summaryTerm).get();
+		const summaryTerm = SUMMARY_TERM[this.language];
+		const snapshot = await this.collection.doc(summaryTerm).get(); // no need to slugify `summaryTerm`
 		return snapshot.data();
 	}
 
@@ -187,33 +162,17 @@ export default class FirestoreDB implements DB {
 
 		return new Promise((resolve, reject) => {
 			deleteQueryBatch(query, resolve, reject);
-		}).then(() =>
-			console.log(
-				"Deleted all entries in Firestore collection " + this.collection.id
-			)
-		);
+		}).then(() => this.logger.deletedAllEntries());
 	}
 
-	public async deleteEntry(targetTerm: string) {
-		await this.collection.doc(this.slugify(targetTerm)).delete();
-
-		this.logger.deletedEntry({
-			term: targetTerm,
-			collection: this.getCollectionName(),
-			db: "FirestoreDB"
-		});
+	public async deleteEntry(term: string) {
+		await this.collection.doc(this.slugify(term)).delete();
+		this.logger.deletedOne(term);
 	}
 
 	public async deleteSummary() {
-		const summaryTerm =
-			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
-
+		const summaryTerm = SUMMARY_TERM[this.language];
 		await this.collection.doc(summaryTerm).delete();
-
-		this.logger.deletedEntry({
-			term: summaryTerm,
-			collection: this.getCollectionName(),
-			db: "MongoDB"
-		});
+		this.logger.deletedOne(summaryTerm);
 	}
 }

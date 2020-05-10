@@ -2,13 +2,13 @@ import path from "path";
 import fs from "fs";
 import { promisify } from "util";
 import prettyStringify from "json-stringify-pretty-compact";
-import Logger from "../logs/Logger";
 import Entry from "../db/models/Entry";
 import Summary from "../db/models/Summary";
+import { SUMMARY_TERM } from "./constants";
 
 export default class JsonHelper {
 	private language: AvailableLanguages;
-	private logger: Logger;
+
 	private jsonDir: string;
 	public allEntriesFilename: string;
 	private summaryFilename: string;
@@ -17,9 +17,6 @@ export default class JsonHelper {
 		this.language = language;
 
 		this.jsonDir = path.join("conversion", "json", this.language);
-
-		this.logger =
-			language === "English" ? new Logger("English") : new Logger("Spanish");
 
 		this.allEntriesFilename =
 			this.language === "English"
@@ -74,11 +71,10 @@ export default class JsonHelper {
 	 * ```
 	 */
 	public saveSummaryAsJson(summary: Summary) {
-		const specialTerm =
-			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
+		const summaryTerm = SUMMARY_TERM[this.language];
 
 		const jsonString = prettyStringify(
-			{ term: specialTerm, summary: summary.getTerms() },
+			{ term: summaryTerm, summary: summary.getTerms() },
 			{ indent: 2 }
 		);
 
@@ -134,6 +130,6 @@ export default class JsonHelper {
 			fs.unlinkSync(path.join(this.jsonDir, filename));
 		});
 
-		this.logger.fullGreen(`Deleted all JSON files in ${this.language}`);
+		console.log(`Deleted all JSON files in ${this.language}`);
 	}
 }

@@ -1,7 +1,6 @@
 export default interface DB {
 	init(): Promise<void> | void;
 	disconnect(): Promise<void> | void;
-	getCollectionName(): string;
 
 	uploadAll(options: {
 		fromSingleJsonFile?: boolean;

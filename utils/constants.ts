@@ -1,5 +1,10 @@
 export const SUPERSCRIPT = ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"];
 
+export const SUMMARY_TERM = {
+	English: "!summaryEnglish",
+	Spanish: "!summarySpanish"
+};
+
 export const LOOSE_FIELD_SYMBOLS: {
 	[key: string]: string;
 } = {

@@ -2,6 +2,7 @@ import { MongoClient, Db, Collection } from "mongodb";
 import Logger from "../logs/Logger";
 import JsonHelper from "../utils/JsonHelper";
 import DB from "./DB.interface";
+import { SUMMARY_TERM } from "../utils/constants";
 
 export default class MongoDB implements DB {
 	private language: AvailableLanguages;
@@ -11,17 +12,13 @@ export default class MongoDB implements DB {
 	private client: MongoClient;
 	private db: Db;
 	private collection: Collection;
+	private dbName = "MongoDB";
+	private collectionName = "string";
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
-
-		this.logger =
-			language === "English" ? new Logger("English") : new Logger("Spanish");
-
-		this.jsonHelper =
-			language === "English"
-				? new JsonHelper("English")
-				: new JsonHelper("Spanish");
+		this.jsonHelper = new JsonHelper(language);
+		this.logger = new Logger(language);
 	}
 
 	public async init() {
@@ -31,7 +28,7 @@ export default class MongoDB implements DB {
 		});
 		await this.client.connect();
 
-		console.log("Connected to MongoDB");
+		this.logger.highlight("Connected to MongoDB", "green");
 
 		this.db = this.client.db("normative");
 
@@ -39,20 +36,24 @@ export default class MongoDB implements DB {
 			this.language === "English"
 				? this.db.collection("EnglishEntries")
 				: this.db.collection("SpanishEntries");
+
+		this.collectionName = this.collection.namespace;
+
+		this.logger.dbName = this.dbName;
+		this.logger.collectionName = this.collectionName;
 	}
 
 	public async disconnect() {
 		await this.client.close();
 	}
 
-	getCollectionName(): string {
-		return this.collection.namespace;
-	}
-
 	/**Sets a unique index on the active collection to prevent duplicate terms. Used only once per collection.*/
 	private async setUniqueIndex() {
 		await this.collection.createIndex("term", { unique: true });
-		this.logger.fullGreen("Set unique index to: " + this.getCollectionName());
+		this.logger.highlight(
+			"Set unique index to: " + this.collectionName,
+			"green"
+		);
 	}
 
 	public async uploadAll(options: {
@@ -69,12 +70,7 @@ export default class MongoDB implements DB {
 
 		for (let entryObject of allEntriesObject.allEntries) {
 			await this.collection.insertOne(entryObject);
-
-			this.logger.uploadedOne({
-				term: entryObject.term,
-				collection: this.getCollectionName(),
-				db: "MongoDB"
-			});
+			this.logger.uploadedOne(entryObject.term);
 		}
 
 		this.uploadSummary();
@@ -89,84 +85,51 @@ export default class MongoDB implements DB {
 			try {
 				await this.collection.insertOne(object);
 			} catch (error) {
-				const { name, code, keyValue } = error;
-				const { term } = keyValue;
-				if (name === "MongoError" && code === 11000)
-					throw Error("MongoDB cannot accept duplicate term: " + term);
+				if (error.name === "MongoError" && error.code === 11000)
+					throw Error(
+						"MongoDB cannot accept duplicate term: " + error.keyValue.term
+					);
 			}
 
-			this.logger.uploadedOne({
-				term: object.term,
-				collection: this.getCollectionName(),
-				db: "MongoDB"
-			});
+			this.logger.uploadedOne(object.term);
 		}
 
-		this.logger.uploadedAll({
-			collection: this.getCollectionName(),
-			db: "MongoDB"
-		});
+		this.logger.uploadedAll();
 	}
 
 	public async uploadSummary() {
-		const filename =
-			this.language === "English"
-				? "!summaryEnglish.json"
-				: "!summarySpanish.json";
-
-		const summaryObject = this.jsonHelper.convertJsonToObject(filename);
-
+		const summaryFilename = SUMMARY_TERM[this.language] + ".json";
+		const summaryObject = this.jsonHelper.convertJsonToObject(summaryFilename);
 		await this.collection.insertOne(summaryObject);
-
-		this.logger.uploadedOne({
-			term: summaryObject.term, // "!summaryEnglish" or "!summarySpanish"
-			collection: this.getCollectionName(),
-			db: "MongoDB"
-		});
+		this.logger.uploadedOne(summaryObject.term);
 	}
 
-	public async getEntry(targetTerm: string) {
-		return await this.collection.findOne({ term: targetTerm });
+	public getEntry(term: string) {
+		return this.collection.findOne({ term });
 	}
 
-	public async getAll() {
-		return await this.collection.find({}).toArray();
+	public getAll() {
+		return this.collection.find({}).toArray();
 	}
 
-	public async getSummary() {
-		const summaryTerm =
-			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
-		return await this.collection.findOne({ term: summaryTerm });
+	public getSummary() {
+		const summaryTerm = SUMMARY_TERM[this.language];
+		return this.collection.findOne({ term: summaryTerm });
 	}
 
 	public async deleteAll() {
 		await this.collection.deleteMany({});
-		this.logger.deletedAllEntries({
-			collection: this.getCollectionName(),
-			db: "MongoDB"
-		});
+		this.logger.deletedAllEntries();
 	}
 
-	public async deleteEntry(targetTerm: string) {
-		await this.collection.deleteOne({ term: targetTerm });
-
-		this.logger.deletedEntry({
-			term: targetTerm,
-			collection: this.getCollectionName(),
-			db: "MongoDB"
-		});
+	public async deleteEntry(term: string) {
+		await this.collection.deleteOne({ term });
+		this.logger.deletedOne(term);
 	}
 
 	public async deleteSummary() {
-		const summaryTerm =
-			this.language === "English" ? "!summaryEnglish" : "!summarySpanish";
-
+		const summaryTerm = SUMMARY_TERM[this.language];
 		await this.collection.deleteOne({ term: summaryTerm });
-
-		this.logger.deletedEntry({
-			term: summaryTerm,
-			collection: this.getCollectionName(),
-			db: "MongoDB"
-		});
+		this.logger.deletedOne(summaryTerm);
 	}
 }

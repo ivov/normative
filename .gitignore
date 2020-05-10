@@ -5,5 +5,4 @@ conversion/**/*.json
 conversion/**/*.docx
 *.env
 *.todo
-
 !/tests/testDocx/*.docx
