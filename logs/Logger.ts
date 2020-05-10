@@ -39,21 +39,15 @@ export default class Logger {
 		);
 	}
 
-	public uploadedAllEntries({
-		collection,
-		db
-	}: {
-		collection: string;
-		db: string;
-	}) {
+	public uploadedAll({ collection, db }: { collection: string; db: string }) {
 		console.log(
-			`Uploaded all entries from single JSON file to ${db} collection ${chalk.bold(
+			`Uploaded summary and all entries to ${db} collection ${chalk.bold(
 				collection
 			)}`
 		);
 	}
 
-	public uploadedEntry({
+	public uploadedOne({
 		term,
 		collection,
 		db

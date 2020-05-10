@@ -92,7 +92,7 @@ export default class Cli {
 	private async deleteMongo() {
 		const db = new MongoDB(this.args.language);
 		await db.init();
-		await db.deleteAllDocuments();
+		await db.deleteAll();
 		await db.disconnect();
 	}
 

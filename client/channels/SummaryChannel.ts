@@ -11,7 +11,7 @@ export default class SummaryChannel implements IpcChannel {
 	}
 
 	public async handle(event: IpcMainEvent) {
-		const summary = await this.db.getSummaryDocument();
+		const summary = await this.db.getSummary();
 		// console.log(summary);
 		event.sender.send(this.name, summary);
 	}

@@ -42,11 +42,12 @@ export default class Entry {
 
 		if (note !== undefined && note !== "") this.note = note.replace("» ", "");
 
-		this.slug = this.buildSlug(term);
+		this.slug = this.slugify(term);
 	}
 
-	private buildSlug(term: string): string {
-		term = term.replace(/<i>|<\/i>|\.|:|\//g, ""); // chars disallowed in a filename
+	/**Removes from a term the characters that are disallowed in a Windows filename. Inverted commas are replaced by single quotes.*/
+	private slugify(term: string) {
+		term = term.replace(/<i>|<\/i>|\.|:|\//g, "");
 		term = term.replace(/"/g, "'");
 
 		const lastCharacter = term.slice(-1);

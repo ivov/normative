@@ -11,7 +11,7 @@ export default class EntryChannel implements IpcChannel {
 	}
 
 	public async handle(event: IpcMainEvent, targetTerm: string) {
-		const entry = await this.db.getEntryDocument(targetTerm);
+		const entry = await this.db.getEntry(targetTerm);
 		event.sender.send(this.name, entry);
 	}
 }

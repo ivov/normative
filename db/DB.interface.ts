@@ -1,12 +1,19 @@
-import { Collection } from "mongodb";
-
 export default interface DB {
-	collection?: Collection;
+	init(): Promise<void> | void;
+	disconnect(): Promise<void> | void;
+	getCollectionName(): string;
 
-	init(): Promise<void>;
-	disconnect(): Promise<void>;
-	getEntryDocument(targetTerm: string): Promise<any>;
-	getAllDocuments(): Promise<any[]>;
-	getSummaryDocument(): Promise<any>;
-	deleteEntryDocument(targetTerm: string): Promise<any>;
+	uploadAll(options: {
+		fromSingleJsonFile?: boolean;
+		fromMultipleJsonFiles: boolean;
+	}): Promise<void>;
+	uploadSummary(): Promise<void>;
+
+	deleteAll(): Promise<void>;
+	deleteEntry(targetTerm: string): Promise<any>;
+	deleteSummary(targetTerm: string): Promise<any>;
+
+	getAll(): Promise<any[]>;
+	getEntry(targetTerm: string): Promise<any>;
+	getSummary(): Promise<any>;
 }
