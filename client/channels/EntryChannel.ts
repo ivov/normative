@@ -2,8 +2,8 @@ import { IpcMainEvent } from "electron";
 import IpcChannel from "./IpcChannel.interface";
 import DB from "../../db/DB.interface";
 
-export default class TermChannel implements IpcChannel {
-	public name = "term-channel";
+export default class EntryChannel implements IpcChannel {
+	public name = "entry-channel";
 	private db: DB;
 
 	constructor(db: DB) {
@@ -11,7 +11,7 @@ export default class TermChannel implements IpcChannel {
 	}
 
 	public async handle(event: IpcMainEvent, targetTerm: string) {
-		const term = await this.db.getEntryDocument(targetTerm);
-		event.sender.send(this.name, term);
+		const entry = await this.db.getEntryDocument(targetTerm);
+		event.sender.send(this.name, entry);
 	}
 }

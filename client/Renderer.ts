@@ -1,21 +1,15 @@
-const ipcRenderer = require("electron").ipcRenderer;
+import IpcView from "./IpcView"; // enabled because of `require` in index.html
+import Entry from "../db/models/Entry";
 
-ipcRenderer.send("summary-channel");
+const ipcView = new IpcView();
 
 const button = document.getElementById("getTermButton") as HTMLElement;
 const entryDiv = document.getElementById("entry") as HTMLElement;
 
-// button.addEventListener("click", () => {
-// 	ipcRenderer.send("get-term", "agreement");
-// });
+ipcView.request("summary-channel");
 
-button.addEventListener("click", () => {
-	ipcRenderer.send("term-channel", "agreement");
+button.addEventListener("click", async () => {
+	const entry: Entry = await ipcView.request("entry-channel", "agreement");
+	entryDiv.innerHTML = entry.translation;
+	// entryDiv.innerHTML = "whoa";
 });
-
-ipcRenderer.on("get-term", (event, arg) => {
-	entryDiv.innerHTML = encode(arg);
-});
-
-const encode = (str: string) =>
-	str.replace(/[\u00A0-\u9999<>\&]/gim, i => "&#" + i.charCodeAt(0) + ";");

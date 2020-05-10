@@ -4,6 +4,6 @@
 conversion/**/*.json
 conversion/**/*.docx
 *.env
-notes.todo
+*.todo
 
 !/tests/testDocx/*.docx

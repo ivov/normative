@@ -2,11 +2,12 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import DB from "../db/DB.interface";
 import MongoDB from "../db/MongoDB";
 import IpcChannel from "./channels/IpcChannel.interface";
-import TermChannel from "./channels/TermChannel";
+import EntryChannel from "./channels/EntryChannel";
 import SummaryChannel from "./channels/SummaryChannel";
-import "./hotReload";
+import "./utils/hotReloadForHtml";
 
-export default class App {
+/**Desktop client responsible for managing the app (main processs), windows (renderer processes), and IPC channels.*/
+export default class Client {
 	window: BrowserWindow | null;
 	db: DB;
 
@@ -24,7 +25,7 @@ export default class App {
 	/**Sets up all the channels for handling events from the renderer process.*/
 	registerIpcChannels() {
 		const ipcChannels: IpcChannel[] = [
-			new TermChannel(this.db),
+			new EntryChannel(this.db),
 			new SummaryChannel(this.db)
 		];
 
@@ -40,10 +41,13 @@ export default class App {
 			width: 800,
 			height: 600,
 			resizable: false,
-			webPreferences: { nodeIntegration: true } // enables `require` in index.html, TODO: unnecessary?
+			webPreferences: { nodeIntegration: true } // enables `require` in index.html
 		});
 
+		// this.window.loadURL("file://" + process.cwd() + "/build/client/index.html");
 		this.window.loadURL("file://" + process.cwd() + "/client/index.html");
+
+		console.log(process.cwd());
 		this.window.webContents.openDevTools();
 
 		this.window.on("closed", () => {
@@ -51,10 +55,11 @@ export default class App {
 		});
 	}
 
-	private onWindowAllClosed() {
+	private onWindowAllClosed = () => {
 		if (process.platform === "darwin") return; // keep process in background to replicate macOS
+		this.db.disconnect();
 		app.quit();
-	}
+	};
 }
 
-new App();
+new Client();
