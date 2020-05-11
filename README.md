@@ -7,11 +7,11 @@ Desktop app for developing a legal dictionary and managing legal terminology.
 Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
 <p align="center">
-    <img src="demo/typescript.png" width="160">
+    <img src="demo/typescript.png" width="150">
     &nbsp;&nbsp;&nbsp;&nbsp;
     <img src="demo/electron.png" width="140">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/firebase.png" width="135">
+    <img src="demo/firebase.png" width="145">
     &nbsp;&nbsp;&nbsp;&nbsp;
     <img src="demo/mongodb.png" width="73">
 </p>
@@ -109,7 +109,13 @@ $ npm run [script]
 
 ## Converter
 
-Designed for parsing two large English-Spanish and Spanish-English legal dictionaries in `.docx` format, each containing over 100,000 richly formatted entries with various fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`. Its output may be one or multiple `.json` files, for later storage in MongoDB/Firestore or viewing in-terminal. The conversion process maps MS Word styles to custom tags for `term`, `translation`, `definition` and `note`, transforms all entries into HTML, extracts the text inside the HTML tags and parses it into `Entry` objects, then saving them as one or multiple `.json` files. Italics and superscript segments in entries are retained.
+<p align="center">
+    <img src="demo/cli.gif">
+</p>
+
+Designed for parsing two large English-Spanish and Spanish-English legal dictionaries in `.docx` format, each containing over 100,000 richly formatted entries with various fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`.
+
+Its output may be one or multiple `.json` files, for later storage in MongoDB/Firestore or viewing in-terminal. The conversion process maps MS Word styles to custom tags for `term`, `translation`, `definition` and `note`, transforms all entries into HTML, extracts the text inside the HTML tags and parses it into `Entry` objects, then saving them as one or multiple `.json` files. Italics and superscript segments in entries are retained.
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -128,17 +134,7 @@ Designed for parsing two large English-Spanish and Spanish-English legal diction
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/entry-mongo.png">
-</p>
-
-<p align="center">
-    &nbsp;&nbsp;&nbsp;&nbsp;
     <img src="demo/entry-firestore.png">
-</p>
-
-<p align="center">
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/cli.gif">
 </p>
 
 ### Test coverage for converter
