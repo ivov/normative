@@ -7,11 +7,11 @@ Desktop app for developing a legal dictionary and managing legal terminology.
 Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
 <p align="center">
-    <img src="demo/typescript.png" width="150">
+    <img src="demo/ts.png" width="150">
     &nbsp;&nbsp;&nbsp;&nbsp;
     <img src="demo/electron.png" width="140">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/firebase.png" width="145">
+    <img src="demo/fb.png" width="145">
     &nbsp;&nbsp;&nbsp;&nbsp;
     <img src="demo/mongodb.png" width="73">
 </p>
@@ -165,7 +165,6 @@ export default class Client {
 		this.db.init();
 
 		this.registerIpcChannels();
-		this.initializeFirebase();
 	}
 
 	/**Sets up all the channels for handling events from the renderer process.*/
