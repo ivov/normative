@@ -1,6 +1,6 @@
 import { ipcRenderer } from "electron";
 
-/**Responsible for sending requests originating in user actions on the renderer process.*/
+/**Responsible for sending IPC requests in response to user actions. Used in the renderer process.*/
 export default class IpcView {
 	private ipcRenderer = ipcRenderer;
 

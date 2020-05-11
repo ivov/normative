@@ -3,6 +3,8 @@
 /coverage
 conversion/**/*.json
 conversion/**/*.docx
+!conversion/docx/sample_eng.docx
+!conversion/docx/sample_spa.docx
 *.env
 *.todo
 !/tests/testDocx/*.docx

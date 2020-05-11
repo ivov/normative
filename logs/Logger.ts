@@ -4,6 +4,7 @@ import chalk from "chalk";
 import cheerio from "cheerio";
 import { LOOSE_FIELD_STRINGS } from "../utils/constants";
 import WordToJsonConverter from "../conversion/WordToJsonConverter";
+import JsonHelper from "../utils/JsonHelper";
 
 /** Responsible for logging operations in `WordToJsonConverter`, `MongoDB`, and `FirestoreDB`.*/
 export default class Logger {
@@ -69,29 +70,40 @@ export default class Logger {
 		);
 	}
 
-	public logEntry(filename: string) {
-		const sourcePath = path.join("conversion", "json", this.language, filename);
-		const object = JSON.parse(fs.readFileSync(sourcePath).toString());
+	/**Retrieves an entry and logs it to the console.*/
+	public logEntry(targetTerm: string) {
+		const jsonHelper = new JsonHelper(this.language);
+
+		const allEntriesObject = jsonHelper.getBigObjectFromSingleJsonFile();
+
+		const entryObject = allEntriesObject.allEntries.find(
+			entryObject => entryObject.term === targetTerm
+		);
+
+		if (entryObject === undefined)
+			throw Error("No entry found for term: " + targetTerm);
 
 		// main fields
 		console.log(
 			"\n" +
-				chalk.keyword("white").inverse(object.term) +
+				chalk.keyword("white").inverse(entryObject.term) +
 				" --- " +
-				chalk.keyword("green").inverse(object.translation)
+				chalk.keyword("green").inverse(entryObject.translation)
 		);
-		if (object.definition !== undefined) {
-			console.log(chalk.keyword("blue").inverse(object.definition));
+		if (entryObject.definition !== undefined) {
+			console.log(chalk.keyword("blue").inverse(entryObject.definition));
 		}
-		if (object.note !== undefined) {
-			console.log(chalk.green(object.note));
+		if (entryObject.note !== undefined) {
+			console.log(chalk.green(entryObject.note));
 		}
 
 		// `similarTo`, separated from other basic link fields because of `similarTo` goes first
-		if (object.similarTo !== undefined) {
+		if (entryObject.similarTo !== undefined) {
 			console.log(
 				chalk.magenta(
-					LOOSE_FIELD_STRINGS.similarTo + ": " + object.similarTo.join(" | ")
+					LOOSE_FIELD_STRINGS.similarTo +
+						": " +
+						entryObject.similarTo.join(" | ")
 				)
 			);
 		}
@@ -99,8 +111,8 @@ export default class Logger {
 		// complex link fields
 		const complexLinkFields = ["classifiedUnder", "classifiedInto"];
 		for (let field of complexLinkFields) {
-			if (object[field] !== undefined) {
-				for (let line of object[field] as { contents: string[] }[]) {
+			if (entryObject[field] !== undefined) {
+				for (let line of entryObject[field] as { contents: string[] }[]) {
 					console.log(
 						chalk.magenta(
 							LOOSE_FIELD_STRINGS[field] + ": " + line.contents.join(" | ")
@@ -118,19 +130,19 @@ export default class Logger {
 			"derivedInto"
 		];
 		for (let field of basicLinkFieldsMinusSimilarTo) {
-			if (object[field] !== undefined) {
+			if (entryObject[field] !== undefined) {
 				console.log(
 					chalk.magenta(
 						LOOSE_FIELD_STRINGS[field] +
 							": " +
-							(object[field] as string[]).join(" | ")
+							(entryObject[field] as string[]).join(" | ")
 					)
 				);
 			}
 		}
 
-		if (object.reference !== undefined) {
-			for (let line of object.reference) {
+		if (entryObject.reference !== undefined) {
+			for (let line of entryObject.reference) {
 				console.log("+ " + line);
 			}
 		}

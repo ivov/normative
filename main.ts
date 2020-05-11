@@ -4,7 +4,7 @@ import FirestoreDB from "./db/FirestoreDB";
 import MongoDB from "./db/MongoDB";
 
 const main = async () => {
-	const db = new FirestoreDB("English");
+	// const db = new FirestoreDB("English");
 	// db.init();
 	// const res = await db.getEntry("agreement");
 	// console.log(res);

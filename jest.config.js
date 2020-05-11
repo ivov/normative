@@ -4,6 +4,7 @@ module.exports = {
 		"^.+\\.ts$": "ts-jest"
 	},
 	testEnvironment: "node",
+	coveragePathIgnorePatterns: ["<rootDir>/logs/Logger.ts"],
 	globals: {
 		"ts-jest": {
 			isolatedModules: true // speeds up ts-jest

@@ -1,22 +1,28 @@
 {
 	"name": "normative",
 	"version": "1.0.0",
-	"description": "Desktop app for developing a legal dictionary and managing legal terminology, built with TypeScript, Electron and MongoDB.",
+	"description": "Desktop app for developing a legal dictionary and managing legal terminology, built with TypeScript, Electron, Firebase and MongoDB.",
 	"main": "build/main.js",
 	"scripts": {
 		"test": "jest --verbose --maxWorkers=1 --coverage --silent",
-		"main": "tsc && node build/main.js",
+		"client": "tsc && electron build/client/Client.js",
+		"dev-client": "tsc-watch --onSuccess \"electron build/client/Client.js\"",
+		"css": "postcss client/css/tailwind.css -o build/client/css/tailwind.css",
+		"log:entry:eng": "tsc && node build/main.js --language English --retrieveEntry",
+		"log:entry:spa": "tsc && node build/main.js --language Spanish --retrieveEntry",
+		"debug": "tsc && node build/main.js",
 		"conv:eng": "tsc && node build/main.js --convert single --language English",
 		"conv:spa": "tsc && node build/main.js --convert single --language Spanish",
-		"feed:mongo:eng": "tsc && node build/main.js --uploadMongo single --language English",
-		"feed:mongo:spa": "tsc && node build/main.js --uploadMongo single --language Spanish",
 		"del:json:eng": "tsc && node build/main.js --deleteJson --language English",
 		"del:json:spa": "tsc && node build/main.js --deleteJson --language Spanish",
+		"imp:mongo:eng": "tsc && node build/main.js --uploadMongo single --language English",
+		"imp:mongo:spa": "tsc && node build/main.js --uploadMongo single --language Spanish",
 		"del:mongo:eng": "tsc && node build/main.js --deleteMongo --language English",
 		"del:mongo:spa": "tsc && node build/main.js --deleteMongo --language Spanish",
-		"css": "postcss client/css/tailwind.css -o build/client/css/tailwind.css",
-		"client": "tsc && electron build/client/Client.js",
-		"dev": "tsc-watch --onSuccess \"electron build/client/Client.js\""
+		"imp:fire:eng": "tsc && node build/main.js --uploadFirestore single --language English",
+		"imp:fire:spa": "tsc && node build/main.js --uploadFirestore single --language Spanish",
+		"del:fire:eng": "tsc && node build/main.js --deleteFirestore --language English",
+		"del:fire:spa": "tsc && node build/main.js --deleteFirestore --language Spanish"
 	},
 	"keywords": [
 		"legal dictionary"
