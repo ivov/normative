@@ -1,5 +1,5 @@
 /**
- * WORK IN PROGRESS
+ * WORK IN PROGRESS !!!
  */
 
 import IpcView from "./IpcView"; // enabled because of `require` in index.html
@@ -15,6 +15,7 @@ const loginButton = document.getElementById(
 	"firebaseui-auth-container"
 ) as HTMLElement;
 const entryDiv = document.getElementById("entry") as HTMLElement;
+const usernameDiv = document.getElementById("username") as HTMLElement;
 
 ipcView.request("summary-channel");
 
@@ -26,7 +27,9 @@ getTermButton.addEventListener("click", async () => {
 
 loginButton.addEventListener("click", async () => {
 	console.log("logging in");
-	await ipcView.request("auth-channel");
+	const displayName = await ipcView.request("auth-channel");
+	usernameDiv.innerHTML = displayName;
+
 	// dotenv.config();
 
 	// const ui = new firebaseui.auth.AuthUI(firebase.auth());

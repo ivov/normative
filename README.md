@@ -6,6 +6,8 @@ Desktop app for developing a legal dictionary and managing legal terminology.
 
 Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
+Currently working on the view layer!
+
 <p align="center">
     <img src="demo/ts.png" width="150">
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -20,27 +22,26 @@ Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
 :construction: **Work in progress** :construction:
 
-Desktop app for importing `.docx` files into a bilingual legal dictionary, searching and exploring interconnected entries, and facilitating the various tasks that go into developing a legal dictionary.
+Desktop app for importing DOCX files into a bilingual legal dictionary, searching and exploring interconnected entries, and facilitating the various tasks that go into developing a legal dictionary.
 
-It relies on two NoSQL databases, MongoDB and Firestore, and includes a CLI app written in TypeScript/Node for converting entries from `.docx` into `.json`, managing both databases, and logging entries to the console.
+It relies on two NoSQL databases, MongoDB and Firestore, and includes a CLI app written in TypeScript/Node for converting entries from DOCX into JSON, managing both databases, and logging entries to the console.
 
 Features:
 
-- Interface built with Tailwind CSS
-- Authentication via Google Sign In
-- Class-based client and IPC channels
-- Embedded content from web sources
-- Preferences and search history storage
-- Snappy conversion, even for large files
-- Fully tested and documented conversion
+- User interface to be built in Tailwind CSS
+- TypeScript/Electron client and IPC channels
+- Authentication via Google Sign In + Firebase
+- Embedded web content from third-party sources
+- Storage of User preferences and search history
+- Snappy DOCX-to-JSON converter in TypeScript/Node
+- Completely tested and documented conversion process
 
 ## Installation
 
 1. Install [Node](https://nodejs.org/en/download/)
-2. Clone repository and install dependencies: `npm install`
-3. Install [MongoDB Community Server](https://www.mongodb.com/download-center/community)
-4. Set up Firestore: See below
-5. Set up MongoDB: See below
+2. Clone repo and install dependencies: `npm i`
+3. Set up Firestore: See below
+4. Set up MongoDB: See below
 
 ### Firestore setup
 
@@ -58,11 +59,11 @@ DOCX_PATH_ENGLISH="conversion/docx/sample_eng.docx"
 DOCX_PATH_SPANISH="conversion/docx/sample_spa.docx"
 ```
 
-`DOCX_PATH_ENGLISH` and `DOCX_PATH_SPANISH` point to the default paths to the target DOCX files for conversion, to be changed as needed.
+`DOCX_PATH_ENGLISH` and `DOCX_PATH_SPANISH` point to the paths of the target DOCX files to be converted. Change as needed.
 
 ### MongoDB setup
 
-1. During installation, tick the option to install also MongoDB compass.
+1. Install [MongoDB Community Server](https://www.mongodb.com/download-center/community), including MongoDB compass.
 2. In MongoDB compass, connect to `mongodb://localhost:27017/`.
 3. Create a db called `normative` and, inside it, create two collections: `EnglishEntries` and `SpanishEntries`
 4. Index both collections on the `term` field.
@@ -91,7 +92,7 @@ $ npm run [script]
 | `client`               | Run the Electron client.                                                                        |
 | `dev-client`           | Run the Electron client while hot-reloading any changes.                                        |
 | `test`                 | Run ~30 unit tests for the converter.                                                           |
-| `css`                  | Run `tailwind.css` file through all PostCSS plugins, only if in production.                     |
+| `css`                  | Run `tailwind.css` through all PostCSS plugins, only in production.                             |
 | `conv:eng`             | Convert the target English DOCX into a single JSON file and a summary file.                     |
 | `conv:spa`             | Convert the target Spanish DOCX into a single JSON file and a summary file.                     |
 | `log:entry:eng [term]` | Retrieve an English entry and logs it to the console in pretty colors.                          |
@@ -113,9 +114,9 @@ $ npm run [script]
     <img src="demo/cli.gif">
 </p>
 
-Designed for parsing two large English-Spanish and Spanish-English legal dictionaries in `.docx` format, each containing over 100,000 richly formatted entries with various fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`.
+Designed for efficiently parsing two giant English-Spanish and Spanish-English legal dictionaries in DOCX format, each containing over 90,000 richly formatted entries with various fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`.
 
-Its output may be one or multiple `.json` files, for later storage in MongoDB/Firestore or viewing in-terminal. The conversion process maps MS Word styles to custom tags for `term`, `translation`, `definition` and `note`, transforms all entries into HTML, extracts the text inside the HTML tags and parses it into `Entry` objects, then saving them as one or multiple `.json` files. Italics and superscript segments in entries are retained.
+The conversion process maps MS Word styles to custom tags for four fields, transforms all entries into HTML, extracts the text of all twelve fields and parses it into `Entry` objects, saving them as one or multiple JSON files. Italics and superscript are retained.
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -199,20 +200,19 @@ export default class Client {
 	}
 
 	private onWindowAllClosed = () => {
-		if (process.platform === "darwin") return; // keep process in background to replicate macOS
+		if (process.platform === "darwin") return; // replicate macOS
 		this.db.disconnect();
 		app.quit();
 	};
 }
 ```
 
-IPC requests originating in the view are encapsulated in the `IpcView` class, which sends requests to the `Client` and act once it receives the responses.
+IPC requests originating in the view are encapsulated in the `IpcView` class, which sends requests to the `Client` and promisifies the responses it receives.
 
 ```ts
 export default class IpcView {
 	private ipcRenderer = ipcRenderer;
 
-	/**Forwards the channel and an optional target term to `Client`. `Client` processes the request based on its registered IPC channels and sends back a response. `IpcView` receives the response and returns it inside a promise.*/
 	public request(channel: string, targetTerm?: string): Promise<any> {
 		this.ipcRenderer.send(channel, targetTerm);
 
