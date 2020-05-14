@@ -125,7 +125,7 @@ The conversion process maps MS Word styles to custom tags for four fields, trans
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/entry-json.png">
+    <img src="demo/entry-json2.png">
 </p>
 
 <p align="center">
