@@ -13,7 +13,7 @@ export default class MongoDB implements DB {
 	private db: Db;
 	private collection: Collection;
 	private dbName = "MongoDB";
-	private collectionName = "string";
+	private collectionName: string;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
@@ -101,6 +101,7 @@ export default class MongoDB implements DB {
 		const summaryFilename = SUMMARY_TERM[this.language] + ".json";
 		const summaryObject = this.jsonHelper.convertJsonToObject(summaryFilename);
 		await this.collection.insertOne(summaryObject);
+
 		this.logger.uploadedOne(summaryObject.term);
 	}
 
