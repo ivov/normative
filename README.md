@@ -35,11 +35,11 @@ The conversion and import operations are executed through a CLI utility called v
 
 Features:
 
-- User interface in Tailwind CSS (coming soon!)
+- User interface built with Tailwind CSS (WIP)
 - TypeScript/Electron client and IPC channels
 - Authentication via Google Sign In + Firebase
-- Embedded web content from third-party sources
-- Storage of user preferences and search history
+- Embedded web content from third-party sources (WIP)
+- Storage of user preferences and search history (WIP)
 - Snappy DOCX-to-JSON converter in TypeScript/Node
 - Completely tested and documented conversion process
 
@@ -122,9 +122,9 @@ $ npm run [script]
     <img src="demo/cli.gif">
 </p>
 
-Designed for efficiently parsing two giant English-Spanish and Spanish-English legal dictionaries in DOCX format, each containing over 90,000 entries with richly formatted fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`. Since the original DOCX files are proprietary, small samples of these files are included in `./conversion/docx`.
+Designed for efficiently parsing two giant English-Spanish and Spanish-English legal dictionaries in DOCX format, each containing over 90,000 entries with richly formatted fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`. Since the original DOCX files are proprietary, small samples of these files are included in the `./conversion/docx` directory.
 
-The conversion process maps MS Word styles to custom tags for four fields, transforms all entries into HTML, extracts the text of tagged and non-tagged (i.e. "loose") fields, parses each entry into an `Entry` object, and saves them all as one or multiple JSON files. Italics and superscript are retained!
+The conversion process maps MS Word styles to custom tags for four fields, transforms all entries into HTML, extracts the text of custom tagged and non-custom-tagged (i.e. "loose") fields, parses each entry into an `Entry` object, and saves them all as one or multiple JSON files. Italics and superscript are retained!
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -158,7 +158,7 @@ The conversion process maps MS Word styles to custom tags for four fields, trans
 
 ## Client
 
-The `Client` class controls the main process, spawns renderer processes and registers IPC channels for communication with the renderer processes. For now, the main process has three IPC channels registered for receiving and responding to requests from renderer processes: one for retrieving entries, one for retrieving summaries, and one for user login via Google Sign In and Firebase.
+The `Client` class controls the main process, spawns renderer processes and registers IPC channels for communication with the renderer processes. For now, the main process has three IPC channels registered for receiving and responding to requests from renderer processes: one for retrieving entries, one for retrieving summaries, and one for user login.
 
 ```ts
 export default class Client {
@@ -216,7 +216,7 @@ export default class Client {
 }
 ```
 
-IPC requests originating in the view are encapsulated in the `IpcView` class, which forwards the requests to the `Client` and promisifies (i.e. returns inside a `Promise`) the responses it receives. This class is used inside the renderer process to send requests to the main process in response to user interactions in the view.
+IPC requests originating in the view are encapsulated in the `IpcView` class used inside the renderer process. This class forwards the requests to the `Client` and promisifies (i.e. returns inside a `Promise`) the responses it receives.
 
 ```ts
 export default class IpcView {
