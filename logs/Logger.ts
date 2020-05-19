@@ -83,7 +83,7 @@ export default class Logger {
 		if (entryObject === undefined)
 			throw Error("No entry found for term: " + targetTerm);
 
-		// main fields
+		// log main fields
 		console.log(
 			"\n" +
 				chalk.keyword("white").inverse(entryObject.term) +
@@ -97,7 +97,7 @@ export default class Logger {
 			console.log(chalk.green(entryObject.note));
 		}
 
-		// `similarTo`, separated from other basic link fields because of `similarTo` goes first
+		// log `similarTo`, separated from other basic link fields because of `similarTo` goes first
 		if (entryObject.similarTo !== undefined) {
 			console.log(
 				chalk.magenta(
@@ -108,7 +108,7 @@ export default class Logger {
 			);
 		}
 
-		// complex link fields
+		// log complex link fields
 		const complexLinkFields = ["classifiedUnder", "classifiedInto"];
 		for (let field of complexLinkFields) {
 			if (entryObject[field] !== undefined) {
@@ -122,7 +122,7 @@ export default class Logger {
 			}
 		}
 
-		// basic link fields minus similarTo because of order
+		// log basic link fields minus `similarTo` because `similarTo` was already logged above
 		const basicLinkFieldsMinusSimilarTo = [
 			"tantamountTo",
 			"differentFrom",
@@ -157,7 +157,7 @@ export default class Logger {
 		const cheerioResult = $("p");
 
 		this.highlight(
-			`Number of DOC/HTML entries in ${converter.language}: ${cheerioResult.length}`,
+			`Number of DOCX/HTML entries in ${converter.language}: ${cheerioResult.length}`,
 			"green"
 		);
 	}

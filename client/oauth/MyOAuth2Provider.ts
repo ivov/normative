@@ -1,3 +1,4 @@
+// WORK IN PROGRESS
 // Based on: https://github.com/mironal/electron-oauth-helper
 
 import Url from "url";
@@ -9,6 +10,7 @@ import {
 	ResponseType,
 	ImplicitGrantConfig
 } from "./OAuthTypes";
+import OAuth2EmitterType from "./OAuth2Emitter.interface";
 
 export default class MyOAuth2Provider extends EventEmitter {
 	config: OAuthConfigType;
@@ -87,21 +89,20 @@ export default class MyOAuth2Provider extends EventEmitter {
 
 		return parameter;
 	}
+
 	awaitRedirect(redirectURL: string, webRequest: WebRequest): Promise<string> {
-		if (!redirectURL || !webRequest) {
+		if (!redirectURL || !webRequest)
 			return Promise.reject(new Error("Invalid parameter"));
-		}
 
 		const isRedirectURL = (url: string) => {
 			return url.startsWith(redirectURL);
 		};
 		return new Promise(resolve => {
 			let filterUrl = redirectURL;
-			if (filterUrl.endsWith("*")) {
-				filterUrl += "*";
-			}
+			if (filterUrl.endsWith("*")) filterUrl += "*";
 
 			webRequest.onBeforeRequest((detail: any, callback: any) => {
+				// TODO: fix types
 				if (isRedirectURL(detail.url)) {
 					callback({ cancel: true });
 
@@ -112,6 +113,7 @@ export default class MyOAuth2Provider extends EventEmitter {
 			});
 
 			webRequest.onBeforeRedirect({ urls: [filterUrl] }, (detail: any) => {
+				// TODO: fix types
 				if (isRedirectURL(detail.redirectURL)) {
 					resolve(detail.redirectURL);
 					return;
@@ -119,17 +121,4 @@ export default class MyOAuth2Provider extends EventEmitter {
 			});
 		});
 	}
-}
-
-// -------
-// TYPES
-// -------
-
-export interface OAuth2EmitterType {
-	emit(event: "before-authorize-request", parameters: object): boolean;
-	emit(
-		event: "before-access-token-request",
-		parameters: object,
-		headers: object
-	): boolean;
 }

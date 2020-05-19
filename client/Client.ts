@@ -9,11 +9,10 @@ import SummaryChannel from "./channels/SummaryChannel";
 import "./utils/hotReloadForHtml";
 import AuthChannel from "./channels/AuthChannel";
 
-/**Desktop client responsible for managing the app (main processs), windows (renderer processes), and IPC channels.*/
+/**Desktop client responsible for managing the app (main process), windows (renderer processes), and IPC channels.*/
 export default class Client {
 	window: BrowserWindow | null;
 	db: DB;
-	auth: any; // TODO: fix me
 
 	constructor() {
 		app.on("ready", this.createWindow);

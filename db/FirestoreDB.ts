@@ -125,7 +125,7 @@ export default class FirestoreDB implements DB {
 	See: https://firebase.google.com/docs/firestore/manage-data/delete-data */
 	public async deleteAll() {
 		const batchSize = 20;
-		// const collectionRef = this.db.collection(this.language + "-terms");
+
 		const query = this.collection.orderBy("__name__").limit(batchSize);
 
 		// @ts-ignore

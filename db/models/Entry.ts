@@ -148,7 +148,7 @@ export default class Entry {
 	 *     "classifiedInto":
 	 *         [
 	 *             { "contents": [ "unilateral act",  "bilateral act" ] },
-	 *             { "contents": [ "criminal act act",  "tortious act" ] }
+	 *             { "contents": [ "criminal act",  "tortious act" ] }
 	 *         ]
 	 * }
 	 * ```

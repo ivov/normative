@@ -6,7 +6,7 @@ Desktop app for developing a legal dictionary and managing legal terminology.
 
 Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
-Currently working on the view layer!
+:construction: **Work in progress**: Currently working on the user interface, so please disregard `./client/renderer.ts`
 
 <p align="center">
     <img src="demo/ts.png" width="150">
@@ -20,19 +20,26 @@ Currently working on the view layer!
 
 ## Overview
 
-:construction: **Work in progress** :construction:
+Desktop app for:
 
-Desktop app for importing DOCX files into a bilingual legal dictionary, searching and exploring interconnected entries, and facilitating the various tasks that go into developing a legal dictionary.
+1. bringing entries from two giant legal dictionaries in DOCX into a NoSQL database, and
+2. authenticating the user and displaying, editing and exploring interconnected entries.
 
-It relies on two NoSQL databases, MongoDB and Firestore, and includes a CLI app written in TypeScript/Node for converting entries from DOCX into JSON, managing both databases, and logging entries to the console.
+The intent is for the app to facilitate the various tasks that go into developing a legal dictionary.
+
+:construction: **Work in progress**: The first (data-centered) section of the app is mostly complete. The second (interface-centered) section is under construction, as I am learning about Electron/OAuth along the way.
+
+The DOCX-to-JSON conversion process is handled by the classes in the `./conversion` directory. The JSON-to-NoSQL import process is handled by the respective classes in the `./db` directory. Two NoSQL databases are used for learning and exploratory purposes.
+
+The conversion and import operations are executed through a CLI utility called via `npm run [script]`. The CLI utility is also used for firing up the Electron client and logging entries to the console for debugging purposes.
 
 Features:
 
-- User interface to be built in Tailwind CSS
+- User interface in Tailwind CSS (coming soon!)
 - TypeScript/Electron client and IPC channels
 - Authentication via Google Sign In + Firebase
 - Embedded web content from third-party sources
-- Storage of User preferences and search history
+- Storage of user preferences and search history
 - Snappy DOCX-to-JSON converter in TypeScript/Node
 - Completely tested and documented conversion process
 
@@ -42,6 +49,7 @@ Features:
 2. Clone repo and install dependencies: `npm i`
 3. Set up Firestore: See below
 4. Set up MongoDB: See below
+5. Set up Firebase Auth: (Instructions coming soon!)
 
 ### Firestore setup
 
@@ -59,7 +67,7 @@ DOCX_PATH_ENGLISH="conversion/docx/sample_eng.docx"
 DOCX_PATH_SPANISH="conversion/docx/sample_spa.docx"
 ```
 
-`DOCX_PATH_ENGLISH` and `DOCX_PATH_SPANISH` point to the paths of the target DOCX files to be converted. Change as needed.
+`DOCX_PATH_ENGLISH` and `DOCX_PATH_SPANISH` point to the paths of the DOCX files to be converted. Change as needed.
 
 ### MongoDB setup
 
@@ -90,15 +98,15 @@ $ npm run [script]
 | Keys                   | Action                                                                                          |
 | ---------------------- | ----------------------------------------------------------------------------------------------- |
 | `client`               | Run the Electron client.                                                                        |
-| `dev-client`           | Run the Electron client while hot-reloading any changes.                                        |
+| `dev-client`           | Run the Electron client while hot-reloading/recompiling any changes.                            |
 | `test`                 | Run ~30 unit tests for the converter.                                                           |
-| `css`                  | Run `tailwind.css` through all PostCSS plugins, only in production.                             |
-| `conv:eng`             | Convert the target English DOCX into a single JSON file and a summary file.                     |
-| `conv:spa`             | Convert the target Spanish DOCX into a single JSON file and a summary file.                     |
-| `log:entry:eng [term]` | Retrieve an English entry and logs it to the console in pretty colors.                          |
-| `log:entry:spa [term]` | Retrieve a Spanish entry and logs it to the console in pretty colors.                           |
-| `del:json:eng`         | Delete all JSON entries in the `./conversion/json/English` directory.                           |
-| `del:json:spa`         | Delete all JSON entries in the `./conversion/json/Spanish` directory.                           |
+| `css`                  | Optimize `./client/css/tailwind.css` with PostCSS plugins, only in production.                  |
+| `conv:eng`             | Convert the source English DOCX into a single JSON file and a separate JSON summary file.       |
+| `conv:spa`             | Convert the source Spanish DOCX into a single JSON file and a separate JSON summary file.       |
+| `log:entry:eng [term]` | Retrieve an English entry and log it to the console in pretty colors.                           |
+| `log:entry:spa [term]` | Retrieve a Spanish entry and log it to the console in pretty colors.                            |
+| `del:json:eng`         | Delete all JSON files in the `./conversion/json/English` directory.                             |
+| `del:json:spa`         | Delete all JSON files in the `./conversion/json/Spanish` directory.                             |
 | `imp:mongo:eng`        | Import the single English JSON file and summary into the `EnglishEntries` MongoDB collection.   |
 | `imp:mongo:spa`        | Import the single Spanish JSON file and summary into the `SpanishEntries` MongoDB collection.   |
 | `del:mongo:eng`        | Delete all English entries from the `EnglishEntries` MongoDB collection.                        |
@@ -114,9 +122,9 @@ $ npm run [script]
     <img src="demo/cli.gif">
 </p>
 
-Designed for efficiently parsing two giant English-Spanish and Spanish-English legal dictionaries in DOCX format, each containing over 90,000 richly formatted entries with various fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`.
+Designed for efficiently parsing two giant English-Spanish and Spanish-English legal dictionaries in DOCX format, each containing over 90,000 entries with richly formatted fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`. Since the original DOCX files are proprietary, small samples of these files are included in `./conversion/docx`.
 
-The conversion process maps MS Word styles to custom tags for four fields, transforms all entries into HTML, extracts the text of all twelve fields and parses it into `Entry` objects, saving them as one or multiple JSON files. Italics and superscript are retained.
+The conversion process maps MS Word styles to custom tags for four fields, transforms all entries into HTML, extracts the text of tagged and non-tagged (i.e. "loose") fields, parses each entry into an `Entry` object, and saves them all as one or multiple JSON files. Italics and superscript are retained!
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -150,7 +158,7 @@ The conversion process maps MS Word styles to custom tags for four fields, trans
 
 ## Client
 
-Electron components are encapsulated in a `Client` class, which controls the main process, spawns renderer processes and registers IPC channels for communication with the view.
+The `Client` class controls the main process, spawns renderer processes and registers IPC channels for communication with the renderer processes. For now, the main process has three IPC channels registered for receiving and responding to requests from renderer processes: one for retrieving entries, one for retrieving summaries, and one for user login via Google Sign In and Firebase.
 
 ```ts
 export default class Client {
@@ -184,6 +192,7 @@ export default class Client {
 	}
 
 	private createWindow() {
+		// renderer process
 		this.window = new BrowserWindow({
 			width: 800,
 			height: 600,
@@ -195,7 +204,7 @@ export default class Client {
 		this.window.webContents.openDevTools();
 
 		this.window.on("closed", () => {
-			this.window = null; // ensure destruction
+			this.window = null; // ensure destruction!
 		});
 	}
 
@@ -207,7 +216,7 @@ export default class Client {
 }
 ```
 
-IPC requests originating in the view are encapsulated in the `IpcView` class, which sends requests to the `Client` and promisifies the responses it receives.
+IPC requests originating in the view are encapsulated in the `IpcView` class, which forwards the requests to the `Client` and promisifies (i.e. returns inside a `Promise`) the responses it receives. This class is used inside the renderer process to send requests to the main process in response to user interactions in the view.
 
 ```ts
 export default class IpcView {

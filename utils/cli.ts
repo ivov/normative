@@ -58,9 +58,10 @@ export default class Cli {
 		if (retrieveEntry) await this.retrieveEntry();
 	}
 
-	/**Receives CLI args and parse them into an object. Excludes the runtime path and script path automatically passed.*/
+	/**Receives CLI args and parse them into an object.*/
 	private getArgs(): minimist.ParsedArgs {
 		const args = minimist(process.argv.slice(2), {
+			// excludes runtime path and script path
 			string: [
 				"language",
 				"convert",
