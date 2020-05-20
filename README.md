@@ -224,7 +224,9 @@ export default class IpcView {
 		this.ipcRenderer.send(channel, targetTerm);
 
 		return new Promise(resolve => {
-			ipcRenderer.on(channel, (event, response) => {
+			this.ipcRenderer.on(channel, (event, response) => {
+				if (channel === "entry-channel")
+					response.translation = this.encode(response.translation);
 				resolve(response);
 			});
 		});
