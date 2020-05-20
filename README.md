@@ -6,8 +6,6 @@ Desktop app for developing a legal dictionary and managing legal terminology.
 
 Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
-:construction: **Work in progress**: Currently working on the user interface, so please disregard `./client/renderer.ts`
-
 <p align="center">
     <img src="demo/ts.png" width="150">
     &nbsp;&nbsp;&nbsp;&nbsp;
@@ -27,7 +25,7 @@ Desktop app for:
 
 The intent is for the app to facilitate the various tasks that go into developing a legal dictionary.
 
-:construction: **Work in progress**: The first (data-centered) section of the app is mostly complete. The second (interface-centered) section is under construction, as I am learning about Electron/OAuth along the way.
+:construction: **Work in progress**: The first (data-centered) section of the app is mostly complete. The second (interface-centered) section is under construction, as I am learning about Electron/OAuth along the way, so please disregard `./client/Renderer.ts`
 
 The DOCX-to-JSON conversion process is handled by the classes in the `./conversion` directory. The JSON-to-NoSQL import process is handled by the respective classes in the `./db` directory. Two NoSQL databases are used for learning and exploratory purposes.
 
