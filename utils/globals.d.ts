@@ -20,3 +20,10 @@ type TaggedSnippets = {
 };
 
 type AllEntriesObject = { allEntries: { [key: string]: any }[] };
+
+declare namespace NodeJS {
+	export interface ProcessEnv {
+		DOCX_PATH_ENGLISH: string;
+		DOCX_PATH_SPANISH: string;
+	}
+}

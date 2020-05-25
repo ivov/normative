@@ -3,7 +3,7 @@ import {
 	LOOSE_FIELD_KEYS,
 	LOOSE_FIELD_SYMBOLS
 } from "../../utils/constants";
-import CheerioExtractor from "../../conversion/CheerioExtractor";
+import CheerioExtractor from "../../services/CheerioExtractor";
 
 /**Represents an entry in the dictionary. Enables conversion into JSON string and into JS object. Enables static creation from a `cheerioEntry`, one of the constituents of a `cheerioResult`.*/
 export default class Entry {

@@ -1,52 +1,29 @@
 import fs from "fs";
 import mammoth from "mammoth";
 import cheerio from "cheerio";
-import dotenv from "dotenv";
 import Entry from "../db/models/Entry";
-import Logger from "../logs/Logger";
-import JsonHelper from "../utils/JsonHelper";
+import TerminalLogger from "./TerminalLogger";
+import JsonHelper from "./JsonHelper";
 import Summary from "../db/models/Summary";
-// import { XmlEntities } from "html-entities";
+import config from "../config";
 
 /** Responsible for converting the entries in a DOCX file into JSON, either as multiple JSON files or as a single JSON file.*/
-export default class WordToJsonConverter {
+export default class DocxParser {
 	public language: AvailableLanguages;
-	private logger: Logger;
 	private jsonHelper: JsonHelper;
 
 	public filepath: string;
 	public htmlString: string;
 
-	// private htmlEncoder: any = new XmlEntities(); // no need to encode for now
-
-	constructor(language: AvailableLanguages, specialFilePath?: string) {
+	constructor(language: AvailableLanguages, specialFilepath?: string) {
 		this.language = language;
-		this.logger = new Logger(language);
 		this.jsonHelper = new JsonHelper(language);
 
-		this.filepath = specialFilePath
-			? specialFilePath
-			: this.getFilePathFromDotEnv();
-	}
-
-	private getFilePathFromDotEnv(): string {
-		dotenv.config();
-
-		if (!fs.existsSync(".env"))
-			throw Error("No dotenv file found at root dir.");
-
-		if (!process.env.DOCX_PATH_ENGLISH || !process.env.DOCX_PATH_SPANISH)
-			throw Error("DOCX file path missing from dotenv file.");
-
-		const filepath =
-			this.language === "English"
-				? process.env.DOCX_PATH_ENGLISH
-				: process.env.DOCX_PATH_SPANISH;
-
-		if (!fs.existsSync(filepath))
-			throw Error("DOCX file path in dotenv file does not exist.");
-
-		return filepath;
+		this.filepath = specialFilepath
+			? specialFilepath
+			: this.language === "English"
+			? config.docx.englishFilepath
+			: config.docx.spanishFilepath;
 	}
 
 	/**Converts a DOCX file into an HTML string and stores it in the `htmlString` class field.*/
@@ -75,12 +52,13 @@ export default class WordToJsonConverter {
 						.join("\n")
 			);
 
+		// Replace symbol to make it unique, differentiating it from `Classified under`, which uses `#` as well.
 		this.htmlString = result.value.replace(
 			/# Classified into:/g,
 			"§ Classified into:"
-		); // This makes the initial symbol unique to facilitate later recognition. (`Classified under` uses `#` as well.)
+		);
 
-		this.logger.highlight("Converted DOCX file to HTML string.", "green");
+		TerminalLogger.success("Converted DOCX file to HTML string.");
 	}
 
 	/**Converts the HTML string in the `htmlString` class field into `cheerioResult`, converts `cheerioResult` into entries and saves entries into a single JSON file or multiple JSON files.
@@ -132,8 +110,8 @@ export default class WordToJsonConverter {
 
 			allEntriesObject.allEntries.push(entry.toObject());
 
-			this.logger.savingJson({
-				counter: index + 1,
+			TerminalLogger.savingJson({
+				counter: index++,
 				total: cheerioResult.length,
 				term: entry.term
 			});
@@ -141,18 +119,15 @@ export default class WordToJsonConverter {
 			summary.addTerm(entry.term);
 		}
 
-		if (options.toSingleJsonFile) {
-			this.jsonHelper.saveAllEntriesAsSingleJsonFile(allEntriesObject);
-		} else {
-			this.jsonHelper.saveAllEntriesAsMultipleJsonFiles(allEntriesObject);
-		}
+		options.toSingleJsonFile
+			? this.jsonHelper.saveAllEntriesAsSingleJsonFile(allEntriesObject)
+			: this.jsonHelper.saveAllEntriesAsMultipleJsonFiles(allEntriesObject);
 
 		summary.checkForDuplicates();
 		this.jsonHelper.saveSummaryAsJson(summary);
 
-		this.logger.highlight(
-			`Converted ${cheerioResult.length} entries in ${this.language} to JSON.`,
-			"green"
+		TerminalLogger.success(
+			`Converted ${cheerioResult.length} entries in ${this.language} to JSON.`
 		);
 	}
 }

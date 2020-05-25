@@ -1,28 +1,35 @@
 import fs from "fs";
-import WordToJsonConverter from "../conversion/WordToJsonConverter";
+import path from "path";
+import DocxParser from "../services/DocxParser";
 import { promisify } from "util";
-import JsonHelper from "../utils/JsonHelper";
+import JsonHelper from "../services/JsonHelper";
 import {
 	allVariantResult,
 	getCheerioResult,
 	createSummaryFromCheerio
 } from "./testUtils";
 
-describe("Converter", () => {
+describe("Parser", () => {
 	describe("Conversion process", () => {
 		test("should properly convert the all-variant DOCX entry", async () => {
-			const myConverter = new WordToJsonConverter(
+			const parser = new DocxParser(
 				"Spanish",
 				"tests/testDocx/all_variants_unit.docx"
 			);
 
-			await myConverter.convertDocxToHtml();
+			await parser.convertDocxToHtml();
 
 			// convert twice just to test both
-			myConverter.convertHtmlToJson({ toMultipleJsonFiles: true });
-			myConverter.convertHtmlToJson({ toSingleJsonFile: true });
+			parser.convertHtmlToJson({ toMultipleJsonFiles: true });
+			parser.convertHtmlToJson({ toSingleJsonFile: true });
 
-			const pathToAllVariantFile = `conversion/json/Spanish/aaa.json`;
+			const pathToAllVariantFile = path.join(
+				"db",
+				"data",
+				"json",
+				"Spanish",
+				"aaa.json"
+			);
 			const data = fs.readFileSync(pathToAllVariantFile);
 			const object = JSON.parse(data.toString());
 
@@ -41,12 +48,14 @@ describe("Converter", () => {
 			if (existingFilenames.length > 0) jsonHelper.deleteAllJsonFiles();
 
 			// populate dir
-			const myConverter = new WordToJsonConverter("English");
-			await myConverter.convertDocxToHtml();
-			myConverter.convertHtmlToJson({ toMultipleJsonFiles: true });
+			const parser = new DocxParser("English");
+			await parser.convertDocxToHtml();
+			parser.convertHtmlToJson({ toMultipleJsonFiles: true });
 
 			const getFileSize = (filename: string) => {
-				const stats = fs.statSync(`conversion/json/English/` + filename);
+				const stats = fs.statSync(
+					path.join("db", "data", "json", "English", filename)
+				);
 				return stats["size"]; // in bytes
 			};
 

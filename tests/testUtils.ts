@@ -1,8 +1,8 @@
 import cheerio from "cheerio";
-import WordToJsonConverter from "../conversion/WordToJsonConverter";
+import DocxParser from "../services/DocxParser";
 import Summary from "../db/models/Summary";
 import Entry from "../db/models/Entry";
-import JsonHelper from "../utils/JsonHelper";
+import JsonHelper from "../services/JsonHelper";
 
 // Conversion result for single entry at `all_variants_unit.docx`.
 export const allVariantResult = {
@@ -28,10 +28,10 @@ export const allVariantResult = {
 };
 
 export const createAndSaveSummaryFile = async () => {
-	const converter = new WordToJsonConverter("English");
-	await converter.convertDocxToHtml();
+	const parser = new DocxParser("English");
+	await parser.convertDocxToHtml();
 
-	const $ = cheerio.load(converter.htmlString);
+	const $ = cheerio.load(parser.htmlString);
 	const cheerioResult = Array.from($("p"));
 
 	const summary = new Summary("English");
@@ -46,9 +46,9 @@ export const createAndSaveSummaryFile = async () => {
 };
 
 export const getCheerioResult = async () => {
-	const converter = new WordToJsonConverter("English");
-	await converter.convertDocxToHtml();
-	const $ = cheerio.load(converter.htmlString);
+	const parser = new DocxParser("English");
+	await parser.convertDocxToHtml();
+	const $ = cheerio.load(parser.htmlString);
 	return Array.from($("p"));
 };
 
@@ -62,16 +62,16 @@ export const createSummaryFromCheerio = (cheerioResult: CheerioElement[]) => {
 };
 
 export const createAllEntriesJsonFile = async () => {
-	const converter = new WordToJsonConverter("English");
-	await converter.convertDocxToHtml();
-	converter.convertHtmlToJson({ toSingleJsonFile: true });
+	const parser = new DocxParser("English");
+	await parser.convertDocxToHtml();
+	parser.convertHtmlToJson({ toSingleJsonFile: true });
 };
 
 export const createAgreementJsonFile = async () => {
-	const converter = new WordToJsonConverter(
+	const parser = new DocxParser(
 		"English",
 		"tests/testDocx/eng_only_agreement.docx"
 	);
-	await converter.convertDocxToHtml();
-	converter.convertHtmlToJson({ toMultipleJsonFiles: true });
+	await parser.convertDocxToHtml();
+	parser.convertHtmlToJson({ toMultipleJsonFiles: true });
 };

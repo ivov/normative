@@ -1,14 +1,14 @@
-import dotenv from "dotenv";
 import "firebase/firestore"; // required for side effects
 import firebase from "firebase";
-import JsonHelper from "../utils/JsonHelper";
-import Logger from "../logs/Logger";
+import JsonHelper from "../services/JsonHelper";
+import TerminalLogger from "../services/TerminalLogger";
 import DB from "./DB.interface";
 import { SUMMARY_TERM } from "../utils/constants";
+import config from "../config";
 
 export default class FirestoreDB implements DB {
 	private language: AvailableLanguages;
-	private logger: Logger;
+	private terminalLogger: TerminalLogger;
 	private jsonHelper: JsonHelper;
 
 	private db: firebase.firestore.Firestore;
@@ -19,16 +19,14 @@ export default class FirestoreDB implements DB {
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 		this.jsonHelper = new JsonHelper(language);
-		this.logger = new Logger(language);
+		this.terminalLogger = new TerminalLogger(language);
 	}
 
 	init() {
-		dotenv.config();
-
 		firebase.initializeApp({
-			apiKey: process.env.API_KEY,
-			authDomain: process.env.AUTH_DOMAIN,
-			projectId: process.env.PROJECT_ID
+			apiKey: config.firebase.apiKey,
+			authDomain: config.firebase.apiKey,
+			projectId: config.firebase.projectId
 		});
 
 		this.db = firebase.firestore();
@@ -40,10 +38,10 @@ export default class FirestoreDB implements DB {
 
 		this.collectionName = this.collection.id;
 
-		this.logger.dbName = this.dbName;
-		this.logger.collectionName = this.collectionName;
+		this.terminalLogger.dbName = this.dbName;
+		this.terminalLogger.collectionName = this.collectionName;
 
-		this.logger.highlight("Connected to Firestore", "green");
+		TerminalLogger.success("Connected to Firestore");
 	}
 
 	disconnect() {
@@ -77,7 +75,7 @@ export default class FirestoreDB implements DB {
 			// `db.collection.doc(x).set({y}, {merge: true})` overwrites section of document
 			// `db.collection.add({y})` adds new document
 
-			this.logger.uploadedOne(entryObject.term);
+			this.terminalLogger.uploadedOne(entryObject.term);
 		}
 
 		await this.uploadSummary();
@@ -89,17 +87,17 @@ export default class FirestoreDB implements DB {
 		for (let filename of filenames) {
 			const object = this.jsonHelper.convertJsonToObject(filename);
 			await this.collection.doc(this.slugify(object.term)).set(object);
-			this.logger.uploadedOne(object.term);
+			this.terminalLogger.uploadedOne(object.term);
 		}
 
-		this.logger.uploadedAll();
+		this.terminalLogger.uploadedAll();
 	}
 
 	public async uploadSummary() {
 		const summaryFilename = SUMMARY_TERM[this.language] + ".json";
 		const summaryObject = this.jsonHelper.convertJsonToObject(summaryFilename);
 		await this.collection.doc(summaryObject.term).set(summaryObject); // no need to slugify `summaryTerm`
-		this.logger.uploadedOne(summaryObject.term);
+		this.terminalLogger.uploadedOne(summaryObject.term);
 	}
 
 	/**Retrieves all the documents (entries and summary) in a FirestoreDB collection as an array of objects.*/
@@ -162,17 +160,17 @@ export default class FirestoreDB implements DB {
 
 		return new Promise((resolve, reject) => {
 			deleteQueryBatch(query, resolve, reject);
-		}).then(() => this.logger.deletedAllEntries());
+		}).then(() => this.terminalLogger.deletedAllEntries());
 	}
 
 	public async deleteEntry(term: string) {
 		await this.collection.doc(this.slugify(term)).delete();
-		this.logger.deletedOne(term);
+		this.terminalLogger.deletedOne(term);
 	}
 
 	public async deleteSummary() {
 		const summaryTerm = SUMMARY_TERM[this.language];
 		await this.collection.doc(summaryTerm).delete();
-		this.logger.deletedOne(summaryTerm);
+		this.terminalLogger.deletedOne(summaryTerm);
 	}
 }

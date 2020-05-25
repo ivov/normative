@@ -1,10 +1,10 @@
 /node_modules
 /build
 /coverage
-conversion/**/*.json
-conversion/**/*.docx
-!conversion/docx/sample_eng.docx
-!conversion/docx/sample_spa.docx
+/db/data/json/**/*.json
+/db/data/docx/*.docx
 *.env
 *.todo
+!db/data/docx/sample_eng.docx
+!db/data/docx/sample_spa.docx
 !/tests/testDocx/*.docx

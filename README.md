@@ -7,65 +7,85 @@ Desktop app for developing a legal dictionary and managing legal terminology.
 Built with TypeScript/Node, Electron, Firebase and MongoDB.
 
 <p align="center">
-    <img src="demo/ts.png" width="150">
+    <img src="docs/ts.png" width="150">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/electron.png" width="140">
+    <img src="docs/electron.png" width="140">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/fb.png" width="145">
+    <img src="docs/fb.png" width="145">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/mongodb.png" width="73">
+    <img src="docs/mongodb.png" width="73">
 </p>
 
 ## Overview
 
 Desktop app for:
 
-1. bringing entries from two giant legal dictionaries in DOCX into a NoSQL database, and
-2. authenticating the user and displaying, editing and exploring interconnected entries.
+1. parsing entries from two giant legal dictionaries in DOCX → `Parser`
+2. displaying, editing and exploring interconnected entries → `Client`
 
-The intent is for the app to facilitate the various tasks that go into developing a legal dictionary.
+The app is intended to facilitate the development of a bilingual legal dictionary.
 
-:construction: **Work in progress**: The first (data-centered) section of the app is mostly complete. The second (interface-centered) section is under construction, as I am learning about Electron/OAuth along the way, so please disregard `./client/Renderer.ts`
-
-The DOCX-to-JSON conversion process is handled by the classes in the `./conversion` directory. The JSON-to-NoSQL import process is handled by the respective classes in the `./db` directory. Two NoSQL databases are used for learning and exploratory purposes.
-
-The conversion and import operations are executed through a CLI utility called via `npm run [script]`. The CLI utility is also used for firing up the Electron client and logging entries to the console for debugging purposes.
+:construction: **Work in progress**: The data conversion section of the app is complete, while the interface is under construction.
 
 Features:
 
-- User interface built with Tailwind CSS (WIP)
+- User interface built with Tailwind CSS (forthcoming!)
 - TypeScript/Electron client and IPC channels
 - Authentication via Google Sign In + Firebase
-- Embedded web content from third-party sources (WIP)
-- Storage of user preferences and search history (WIP)
-- Snappy DOCX-to-JSON converter in TypeScript/Node
+- Embedded web content from third-party sources (forthcoming!)
+- Storage of user preferences and search history (forthcoming!)
+- Snappy DOCX-to-JSON parser in TypeScript/Node
 - Completely tested and documented conversion process
+
+## Structure
+
+```
+.
+├── client            # desktop app
+├── config            # credentials management
+├── db                # DB managers, models, JSON/DOCX data
+├── docs              # documentation materials
+├── services          # parsing logic and helpers
+├── utils
+└── tests
+```
 
 ## Installation
 
-1. Install [Node](https://nodejs.org/en/download/)
-2. Clone repo and install dependencies: `npm i`
-3. Set up Firestore: See below
+1. Install [Node v10.15.1](https://nodejs.org/en/download/)
+2. Clone repo and install dependencies.
+3. Set up Firestore and Firebase Auth: See below
 4. Set up MongoDB: See below
-5. Set up Firebase Auth: (Instructions coming soon!)
 
-### Firestore setup
+### Firestore and Firebase Auth setup
 
 1. Go to the [Firebase console](https://console.firebase.google.com/) and `Add project`
 2. Select `Database` from the left nav and `Create database`
 3. At the Firebase Console, go to `Project Overview` → `+ Add app` → `Web`
 4. Name the web app and note down its `apiKey`, `authDomain` and `projectId`.
-5. Create the following `.env` file at the root dir of the project:
+
+**TODO**: Write instructions for getting Google OAuth credentials.
+
+5. Create the following `.env` file at the `/config` dir.
 
 ```
-API_KEY="yourapikey"
-AUTH_DOMAIN="your.auth.domain"
-PROJECT_ID="yourprojectid"
-DOCX_PATH_ENGLISH="conversion/docx/sample_eng.docx"
-DOCX_PATH_SPANISH="conversion/docx/sample_spa.docx"
-```
+# DOCX filepaths
+DOCX_PATH_ENGLISH="db/data/docx/sample_eng.docx"
+DOCX_PATH_SPANISH="db/data/docx/sample_spa.docx"
 
-`DOCX_PATH_ENGLISH` and `DOCX_PATH_SPANISH` point to the paths of the DOCX files to be converted. Change as needed.
+# Firebase credentials
+FIREBASE_API_KEY="yourApiKey"
+FIREBASE_AUTH_DOMAIN="your.auth.domain"
+FIREBASE_PROJECT_ID="yourProjectId"
+
+# Google OAuth credentials
+GOOGLE_OAUTH_CLIENT_ID="yourOAuthClientId"
+GOOGLE_OAUTH_CLIENT_SECRET="yourOAuthClientSecret"
+GOOGLE_OAUTH_REDIRECT_URI="yourOAuthRedirectUri"
+GOOGLE_OAUTH_AUTHORIZE_URL="yourAuthorizeUrl"
+GOOGLE_OAUTH_RESPONSE_TYPE="token"
+GOOGLE_OAUTH_SCOPE="yourOauthScopes"
+```
 
 ### MongoDB setup
 
@@ -74,50 +94,54 @@ DOCX_PATH_SPANISH="conversion/docx/sample_spa.docx"
 3. Create a db called `normative` and, inside it, create two collections: `EnglishEntries` and `SpanishEntries`
 4. Index both collections on the `term` field.
 
-## Project structure
-
-```
-.
-├── client            // Electron app
-├── conversion        // DOCX-to-JSON converter
-├── db                // DB managers and models
-├── demo              // Documentation materials
-├── logs              // Logger for converter
-├── utils             // CLI and other utilities
-└── tests             // Tests for converter
-```
-
 ## Project scripts
 
 ```
 $ npm run [script]
 ```
 
-| Keys                   | Action                                                                                          |
-| ---------------------- | ----------------------------------------------------------------------------------------------- |
-| `client`               | Run the Electron client.                                                                        |
-| `dev-client`           | Run the Electron client while hot-reloading/recompiling any changes.                            |
-| `test`                 | Run ~30 unit tests for the converter.                                                           |
-| `css`                  | Optimize `./client/css/tailwind.css` with PostCSS plugins, only in production.                  |
-| `conv:eng`             | Convert the source English DOCX into a single JSON file and a separate JSON summary file.       |
-| `conv:spa`             | Convert the source Spanish DOCX into a single JSON file and a separate JSON summary file.       |
-| `log:entry:eng [term]` | Retrieve an English entry and log it to the console in pretty colors.                           |
-| `log:entry:spa [term]` | Retrieve a Spanish entry and log it to the console in pretty colors.                            |
-| `del:json:eng`         | Delete all JSON files in the `./conversion/json/English` directory.                             |
-| `del:json:spa`         | Delete all JSON files in the `./conversion/json/Spanish` directory.                             |
-| `imp:mongo:eng`        | Import the single English JSON file and summary into the `EnglishEntries` MongoDB collection.   |
-| `imp:mongo:spa`        | Import the single Spanish JSON file and summary into the `SpanishEntries` MongoDB collection.   |
-| `del:mongo:eng`        | Delete all English entries from the `EnglishEntries` MongoDB collection.                        |
-| `del:mongo:spa`        | Delete all Spanish entries from the `SpanishEntries` MongoDB collection.                        |
-| `imp:fire:eng`         | Import the single English JSON file and summary into the `EnglishEntries` Firestore collection. |
-| `imp:fire:spa`         | Import the single Spanish JSON file and summary into the `SpanishEntries` Firestore collection. |
-| `del:fire:eng`         | Delete all English entries from the `EnglishEntries` Firestore collection.                      |
-| `del:fire:spa`         | Delete all Spanish entries from the `SpanishEntries` Firestore collection.                      |
+### Development
 
-## Converter
+| Script       | Action                                                                         |
+| ------------ | ------------------------------------------------------------------------------ |
+| `client`     | Run the Electron client.                                                       |
+| `dev-client` | Run the Electron client while hot-reloading/recompiling any changes.           |
+| `test`       | Run ~30 unit tests for the parser.                                             |
+| `css`        | Optimize `./client/css/tailwind.css` with PostCSS plugins, only in production. |
+
+### JSON management
+
+| Script                 | Action                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `conv:eng`             | Convert the source English DOCX into a single JSON file and a summary file.     |
+| `conv:spa`             | Convert the source Spanish DOCX into a single JSON file and a summary file.     |
+| `del:json:eng`         | Delete all JSON files in the `./conversion/json/English` directory.             |
+| `del:json:spa`         | Delete all JSON files in the `./conversion/json/Spanish` directory.             |
+| `log:entry:eng [term]` | Retrieve an English entry from JSON and log it to the console in pretty colors. |
+| `log:entry:spa [term]` | Retrieve a Spanish entry from JSON and log it to the console in pretty colors.  |
+
+### Firestore management
+
+| Script         | Action                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| `imp:fire:eng` | Import the single English JSON file and summary into the `EnglishEntries` Firestore collection. |
+| `imp:fire:spa` | Import the single Spanish JSON file and summary into the `SpanishEntries` Firestore collection. |
+| `del:fire:eng` | Delete all English entries from the `EnglishEntries` Firestore collection.                      |
+| `del:fire:spa` | Delete all Spanish entries from the `SpanishEntries` Firestore collection.                      |
+
+### MongoDB management
+
+| Script          | Action                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| `imp:mongo:eng` | Import the single English JSON file and summary into the `EnglishEntries` MongoDB collection. |
+| `imp:mongo:spa` | Import the single Spanish JSON file and summary into the `SpanishEntries` MongoDB collection. |
+| `del:mongo:eng` | Delete all English entries from the `EnglishEntries` MongoDB collection.                      |
+| `del:mongo:spa` | Delete all Spanish entries from the `SpanishEntries` MongoDB collection.                      |
+
+## Parser
 
 <p align="center">
-    <img src="demo/cli.gif">
+    <img src="docs/cli.gif">
 </p>
 
 Designed for efficiently parsing two giant English-Spanish and Spanish-English legal dictionaries in DOCX format, each containing over 90,000 entries with richly formatted fields such as `term`, `translation`, `definition`, `note`, `classifiedUnder`, `classifiedInto`, `tantamountTo`, `differentFrom`, `derivedFrom`, `derivedInto` and `reference`. Since the original DOCX files are proprietary, small samples of these files are included in the `./conversion/docx` directory.
@@ -126,32 +150,32 @@ The conversion process maps MS Word styles to custom tags for four fields, trans
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/entry-docx.png">
+    <img src="docs/entry-docx.png">
 </p>
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/entry-json2.png">
+    <img src="docs/entry-json2.png">
 </p>
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/entry-cli.png">
+    <img src="docs/entry-cli.png">
 </p>
 
 <p align="center">
     &nbsp;&nbsp;&nbsp;&nbsp;
-    <img src="demo/entry-firestore.png">
+    <img src="docs/entry-firestore.png">
 </p>
 
-### Test coverage for converter
+### Test coverage for parser
 
 <p align="center">
-    <img src="demo/test-coverage-numbers.png">
+    <img src="docs/test-coverage-numbers.png">
 </p>
 
 <p align="center">
-    <img src="demo/test-coverage-descriptions.png">
+    <img src="docs/test-coverage-desc.png">
 </p>
 
 ## Client

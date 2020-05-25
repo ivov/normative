@@ -1,12 +1,12 @@
 import { MongoClient, Db, Collection } from "mongodb";
-import Logger from "../logs/Logger";
-import JsonHelper from "../utils/JsonHelper";
+import TerminalLogger from "../services/TerminalLogger";
+import JsonHelper from "../services/JsonHelper";
 import DB from "./DB.interface";
 import { SUMMARY_TERM } from "../utils/constants";
 
 export default class MongoDB implements DB {
 	private language: AvailableLanguages;
-	private logger: Logger;
+	private terminalLogger: TerminalLogger;
 	private jsonHelper: JsonHelper;
 
 	private client: MongoClient;
@@ -18,7 +18,7 @@ export default class MongoDB implements DB {
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 		this.jsonHelper = new JsonHelper(language);
-		this.logger = new Logger(language);
+		this.terminalLogger = new TerminalLogger(language);
 	}
 
 	public async init() {
@@ -28,7 +28,7 @@ export default class MongoDB implements DB {
 		});
 		await this.client.connect();
 
-		this.logger.highlight("Connected to MongoDB", "green");
+		TerminalLogger.success("Connected to MongoDB");
 
 		this.db = this.client.db("normative");
 
@@ -39,8 +39,8 @@ export default class MongoDB implements DB {
 
 		this.collectionName = this.collection.namespace;
 
-		this.logger.dbName = this.dbName;
-		this.logger.collectionName = this.collectionName;
+		this.terminalLogger.dbName = this.dbName;
+		this.terminalLogger.collectionName = this.collectionName;
 	}
 
 	public async disconnect() {
@@ -50,10 +50,7 @@ export default class MongoDB implements DB {
 	/**Sets a unique index on the active collection to prevent duplicate terms. Used only once per collection.*/
 	private async setUniqueIndex() {
 		await this.collection.createIndex("term", { unique: true });
-		this.logger.highlight(
-			"Set unique index to: " + this.collectionName,
-			"green"
-		);
+		TerminalLogger.success("Set unique index to: " + this.collectionName);
 	}
 
 	public async uploadAll(options: {
@@ -70,7 +67,7 @@ export default class MongoDB implements DB {
 
 		for (let entryObject of allEntriesObject.allEntries) {
 			await this.collection.insertOne(entryObject);
-			this.logger.uploadedOne(entryObject.term);
+			this.terminalLogger.uploadedOne(entryObject.term);
 		}
 
 		this.uploadSummary();
@@ -91,10 +88,10 @@ export default class MongoDB implements DB {
 					);
 			}
 
-			this.logger.uploadedOne(object.term);
+			this.terminalLogger.uploadedOne(object.term);
 		}
 
-		this.logger.uploadedAll();
+		this.terminalLogger.uploadedAll();
 	}
 
 	public async uploadSummary() {
@@ -102,7 +99,7 @@ export default class MongoDB implements DB {
 		const summaryObject = this.jsonHelper.convertJsonToObject(summaryFilename);
 		await this.collection.insertOne(summaryObject);
 
-		this.logger.uploadedOne(summaryObject.term);
+		this.terminalLogger.uploadedOne(summaryObject.term);
 	}
 
 	public getEntry(term: string) {
@@ -120,17 +117,17 @@ export default class MongoDB implements DB {
 
 	public async deleteAll() {
 		await this.collection.deleteMany({});
-		this.logger.deletedAllEntries();
+		this.terminalLogger.deletedAllEntries();
 	}
 
 	public async deleteEntry(term: string) {
 		await this.collection.deleteOne({ term });
-		this.logger.deletedOne(term);
+		this.terminalLogger.deletedOne(term);
 	}
 
 	public async deleteSummary() {
 		const summaryTerm = SUMMARY_TERM[this.language];
 		await this.collection.deleteOne({ term: summaryTerm });
-		this.logger.deletedOne(summaryTerm);
+		this.terminalLogger.deletedOne(summaryTerm);
 	}
 }

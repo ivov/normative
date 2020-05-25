@@ -1,26 +1,36 @@
-import path from "path";
-import fs from "fs";
 import chalk from "chalk";
 import cheerio from "cheerio";
 import { LOOSE_FIELD_STRINGS } from "../utils/constants";
-import WordToJsonConverter from "../conversion/WordToJsonConverter";
-import JsonHelper from "../utils/JsonHelper";
+import DocxParser from "./DocxParser";
+import JsonHelper from "./JsonHelper";
 
-/** Responsible for logging operations in `WordToJsonConverter`, `MongoDB`, and `FirestoreDB`.*/
-export default class Logger {
-	public language: AvailableLanguages;
-	public dbName: string; // optionally set by DB during init
-	public collectionName: string; // optionally set by DB during init
+/** Responsible for logging steps and results of service operations.*/
+export default class TerminalLogger {
+	public language: AvailableLanguages; // only for `logEntry` and `showStats`
+	public dbName?: string;
+	public collectionName?: string;
 
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 	}
 
-	public highlight(message: string, color: string) {
+	static highlight(message: string, color: string) {
 		console.log(chalk.keyword(color).inverse(message + "\n"));
 	}
 
-	public savingJson({
+	static info(message: string) {
+		this.highlight(message, "cyan");
+	}
+
+	static success(message: string) {
+		this.highlight(message, "green");
+	}
+
+	static failure(message: string) {
+		this.highlight(message, "red");
+	}
+
+	static savingJson({
 		counter,
 		total,
 		term
@@ -29,12 +39,15 @@ export default class Logger {
 		total: number;
 		term: string;
 	}) {
-		const progress = ((counter * 100) / total).toFixed(1).toString() + "%";
-		let displayTerm = term.length < 40 ? term : term.slice(0, 40) + "...";
+		const progressPercentage =
+			((counter * 100) / total).toFixed(1).toString() + "%";
+
+		const displayTerm = term.length < 40 ? term : term.slice(0, 40) + "...";
+
 		console.log(
 			displayTerm +
 				counter.toString().padStart(50 - displayTerm.length) +
-				progress.padStart(10)
+				progressPercentage.padStart(10)
 		);
 	}
 
@@ -150,15 +163,14 @@ export default class Logger {
 
 	/**Logs to the terminal the number of entries for a given language. */
 	public async showStats(language: AvailableLanguages) {
-		const converter = new WordToJsonConverter(language);
-		await converter.convertDocxToHtml();
+		const parser = new DocxParser(language);
+		await parser.convertDocxToHtml();
 
-		const $ = cheerio.load(converter.htmlString);
+		const $ = cheerio.load(parser.htmlString);
 		const cheerioResult = $("p");
 
-		this.highlight(
-			`Number of DOCX/HTML entries in ${converter.language}: ${cheerioResult.length}`,
-			"green"
+		console.log(
+			`Number of DOCX/HTML entries in ${parser.language}: ${cheerioResult.length}`
 		);
 	}
 }

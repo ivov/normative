@@ -1,9 +1,9 @@
 import minimist from "minimist";
-import WordToJsonConverter from "../conversion/WordToJsonConverter";
+import DocxParser from "../services/DocxParser";
 import MongoDB from "../db/MongoDB";
-import JsonHelper from "./JsonHelper";
+import JsonHelper from "../services/JsonHelper";
 import FirestoreDB from "../db/FirestoreDB";
-import Logger from "../logs/Logger";
+import TerminalLogger from "../services/TerminalLogger";
 
 /**Responsible for receiving CLI arguments and calling the corresponding functions.
  * - `--language` → `English` or `Spanish`
@@ -94,10 +94,10 @@ export default class Cli {
 
 	/**Converts DOCX file to a single JSON file or to multiple JSON files.*/
 	private async convert() {
-		const converter = new WordToJsonConverter(this.args.language);
-		await converter.convertDocxToHtml();
+		const parser = new DocxParser(this.args.language);
+		await parser.convertDocxToHtml();
 
-		converter.convertHtmlToJson(
+		parser.convertHtmlToJson(
 			this.args.convert === "single"
 				? { toSingleJsonFile: true }
 				: { toMultipleJsonFiles: true }
@@ -156,7 +156,7 @@ export default class Cli {
 
 	/**Retrieves an entry and logs it to the console.*/
 	private async retrieveEntry() {
-		const logger = new Logger(this.args.language);
-		logger.logEntry(this.args.retrieveEntry);
+		const terminalLogger = new TerminalLogger(this.args.language);
+		terminalLogger.logEntry(this.args.retrieveEntry);
 	}
 }

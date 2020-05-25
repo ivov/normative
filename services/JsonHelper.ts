@@ -4,7 +4,7 @@ import { promisify } from "util";
 import prettyStringify from "json-stringify-pretty-compact";
 import Entry from "../db/models/Entry";
 import Summary from "../db/models/Summary";
-import { SUMMARY_TERM } from "./constants";
+import { SUMMARY_TERM } from "../utils/constants";
 
 export default class JsonHelper {
 	private language: AvailableLanguages;
@@ -16,7 +16,7 @@ export default class JsonHelper {
 	constructor(language: AvailableLanguages) {
 		this.language = language;
 
-		this.jsonDir = path.join("conversion", "json", this.language);
+		this.jsonDir = path.join("db", "data", "json", this.language);
 
 		this.allEntriesFilename =
 			this.language === "English"

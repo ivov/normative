@@ -1,6 +1,6 @@
 import fs from "fs";
 import { promisify } from "util";
-import JsonHelper from "../utils/JsonHelper";
+import JsonHelper from "../services/JsonHelper";
 import Summary from "../db/models/Summary";
 import {
 	createAndSaveSummaryFile,
@@ -30,20 +30,20 @@ describe("JsonHelper", () => {
 	});
 
 	test("should fail at getting the summary of entries if it does not exist", async () => {
-		const summaryPath = "conversion/json/English/!summaryEnglish.json";
+		const summaryPath = "db/data/json/English/!summaryEnglish.json";
 
 		if (fs.existsSync(summaryPath)) {
 			const rename = promisify(fs.rename);
 			await rename(
-				"conversion/json/English/!summaryEnglish.json",
-				"conversion/json/!summaryEnglish.json"
+				"db/data/json/English/!summaryEnglish.json",
+				"db/data/json/!summaryEnglish.json"
 			); // put elsewhere
 
 			expect(() => jsonHelper.getSummary()).toThrow();
 
 			await rename(
-				"conversion/json/!summaryEnglish.json",
-				"conversion/json/English/!summaryEnglish.json"
+				"db/data/json/!summaryEnglish.json",
+				"db/data/json/English/!summaryEnglish.json"
 			); // put back
 		}
 	});

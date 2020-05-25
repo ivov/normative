@@ -1,7 +1,7 @@
 import { IpcMainEvent, BrowserWindow } from "electron";
 import querystring from "querystring";
 import firebase from "firebase";
-import dotenv from "dotenv";
+import config from "../../config";
 import IpcChannel from "./IpcChannel.interface";
 import MyOAuth2Provider from "../oauth/MyOAuth2Provider";
 
@@ -9,14 +9,13 @@ export default class AuthChannel implements IpcChannel {
 	public name = "auth-channel";
 
 	private getGoogleOAuthConfig() {
-		dotenv.config();
 		return {
-			client_id: process.env.GOOGLE_OAUTH_CLIENT_ID,
-			client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-			redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URI,
-			authorize_url: process.env.GOOGLE_OAUTH_AUTHORIZE_URL,
-			response_type: process.env.GOOGLE_OAUTH_RESPONSE_TYPE,
-			scope: process.env.GOOGLE_OAUTH_SCOPE
+			client_id: config.googleOAuth.clientId,
+			client_secret: config.googleOAuth.clientSecret,
+			redirect_uri: config.googleOAuth.redirectUri,
+			authorize_url: config.googleOAuth.authorizeUrl,
+			response_type: config.googleOAuth.responseType,
+			scope: config.googleOAuth.scope
 		};
 	}
 

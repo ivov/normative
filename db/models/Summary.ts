@@ -1,4 +1,4 @@
-import JsonHelper from "../../utils/JsonHelper";
+import JsonHelper from "../../services/JsonHelper";
 
 /**Responsible for managing the summary (i.e. the list of all unique terms) for each language in the dictionary.*/
 export default class Summary {
@@ -37,7 +37,7 @@ export default class Summary {
 	private getDuplicates() {
 		return this.terms
 			.filter(
-				(term: string, index: number) => this.terms.indexOf(term) != index
+				(term: string, index: number) => this.terms.indexOf(term) !== index
 			)
 			.join(", ");
 	}

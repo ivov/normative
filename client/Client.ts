@@ -1,5 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
-import dotenv from "dotenv";
+import { app, BrowserWindow, ipcMain, session } from "electron";
 import firebase from "firebase";
 import DB from "../db/DB.interface";
 import MongoDB from "../db/MongoDB";
@@ -8,6 +7,7 @@ import EntryChannel from "./channels/EntryChannel";
 import SummaryChannel from "./channels/SummaryChannel";
 import "./utils/hotReloadForHtml";
 import AuthChannel from "./channels/AuthChannel";
+import config from "../config";
 
 /**Desktop client responsible for managing the app (main process), windows (renderer processes), and IPC channels.*/
 export default class Client {
@@ -55,6 +55,7 @@ export default class Client {
 		this.window.on("closed", () => {
 			this.window = null; // ensure destruction
 		});
+		session.defaultSession.clearStorageData();
 	}
 
 	private onWindowAllClosed = () => {
@@ -64,12 +65,10 @@ export default class Client {
 	};
 
 	private initializeFirebase() {
-		dotenv.config();
-
 		firebase.initializeApp({
-			apiKey: process.env.API_KEY,
-			authDomain: process.env.AUTH_DOMAIN,
-			projectId: process.env.PROJECT_ID
+			apiKey: config.firebase.apiKey,
+			authDomain: config.firebase.apiKey,
+			projectId: config.firebase.projectId
 		});
 	}
 }

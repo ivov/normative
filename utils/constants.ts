@@ -10,7 +10,7 @@ export const LOOSE_FIELD_SYMBOLS: {
 } = {
 	similarTo: "\u007E",
 	classifiedUnder: "#",
-	classifiedInto: "\u00A7", // §, but originally "#""
+	classifiedInto: "\u00A7", // `"§"`, but originally `"#"`
 	derivedFrom: "\u2190",
 	derivedInto: "\u2192",
 	tantamountTo: "\u25AB",
