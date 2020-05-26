@@ -2,10 +2,10 @@
  * WORK IN PROGRESS
  */
 
-import IpcView from "./IpcView";
+import Requester from "./Requester";
 import Entry from "../db/models/Entry";
 
-const ipcView = new IpcView();
+const requester = new Requester();
 
 const getTermButton = document.getElementById("get-term-button") as HTMLElement;
 const loginButton = document.getElementById("auth-button") as HTMLElement;
@@ -13,15 +13,15 @@ const entryDiv = document.getElementById("entry") as HTMLElement;
 const usernameDiv = document.getElementById("username") as HTMLElement;
 const entryBodyDiv = document.getElementById("entry-body") as HTMLElement;
 
-ipcView.request("summary-channel");
+requester.request("summary-channel");
 
 getTermButton.addEventListener("click", async () => {
-	const entry: Entry = await ipcView.request("entry-channel", "agreement");
+	const entry = await requester.request<Entry>("entry-channel", "agreement");
 	entryDiv.innerHTML = entry.translation;
 });
 
 loginButton.addEventListener("click", async () => {
-	const displayName = await ipcView.request("auth-channel");
+	const displayName = await requester.request<string>("auth-channel");
 	usernameDiv.innerHTML = displayName;
 });
 
@@ -42,7 +42,7 @@ const getEntryRowStyle = (exceptionForFirst?: boolean) => {
 };
 
 (async () => {
-	const entry: Entry = await ipcView.request("entry-channel", "agreement");
+	const entry = await requester.request<Entry>("entry-channel", "agreement");
 
 	let fullText = "";
 	for (let property in entry) {
@@ -76,7 +76,7 @@ const getEntryRowStyle = (exceptionForFirst?: boolean) => {
 
 (async () => {
 	const entriesColumn = document.querySelector(".entries-column");
-	const summary = await ipcView.request("summary-channel");
+	const summary = await requester.request<string[]>("summary-channel");
 	for (let entry of summary) {
 		const entryDiv = document.createElement("div");
 		if (summary.indexOf(entry) === 0) {

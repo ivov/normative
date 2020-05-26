@@ -4,6 +4,7 @@
 	"description": "Desktop app for developing a legal dictionary and managing legal terminology, built with TypeScript, Electron, Firebase and MongoDB.",
 	"main": "build/main.js",
 	"scripts": {
+		"main": "tsc && node build/main.js",
 		"test": "jest --config tests/jest.config.js",
 		"client": "tsc && electron build/client/Client.js",
 		"dev": "tsc-watch --onSuccess \"electron build/client/Client.js\"",

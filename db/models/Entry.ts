@@ -45,6 +45,8 @@ export default class Entry {
 		this.slug = this.slugify(term);
 	}
 
+	// static fromMongoDocument(mongoDocument) {}
+
 	/**Removes from a term the characters that are disallowed in a Windows filename. Inverted commas are replaced by single quotes.*/
 	private slugify(term: string) {
 		term = term.replace(/<i>|<\/i>|\.|:|\//g, "");

@@ -238,19 +238,15 @@ export default class Client {
 }
 ```
 
-IPC requests originating in the view are encapsulated in the `IpcView` class used inside the renderer process. This class forwards the requests to the `Client` and promisifies (i.e. returns inside a `Promise`) the responses it receives.
+IPC requests originating in the view are encapsulated in the `Requester` class used inside the renderer process. This class forwards the requests to the `Client` and promisifies (i.e. returns inside a `Promise`) the responses it receives.
 
 ```ts
-export default class IpcView {
-	private ipcRenderer = ipcRenderer;
-
-	public request(channel: string, targetTerm?: string): Promise<any> {
-		this.ipcRenderer.send(channel, targetTerm);
+export default class Requester {
+	public request<T>(channel: string, term?: string): Promise<T> {
+		ipcRenderer.send(channel, term);
 
 		return new Promise(resolve => {
-			this.ipcRenderer.on(channel, (event, response) => {
-				if (channel === "entry-channel")
-					response.translation = this.encode(response.translation);
+			ipcRenderer.on(channel, (event, response) => {
 				resolve(response);
 			});
 		});

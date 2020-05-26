@@ -3,6 +3,7 @@ import TerminalLogger from "../services/TerminalLogger";
 import JsonHelper from "../services/JsonHelper";
 import DB from "./DB.interface";
 import { SUMMARY_TERM } from "../utils/constants";
+import Entry from "./models/Entry";
 
 export default class MongoDB implements DB {
 	private language: AvailableLanguages;
@@ -103,13 +104,12 @@ export default class MongoDB implements DB {
 		this.terminalLogger.uploadedOne(summaryObject.term);
 	}
 
-	public getEntry(term: string) {
-		// TODO: convert mongoDB object to entry
-		return this.collection.findOne({ term });
+	public async getEntry(term: string) {
+		return await this.collection.findOne<Entry>({ term });
 	}
 
 	public getAll() {
-		return this.collection.find({}).toArray();
+		return this.collection.find<Entry>({}).toArray();
 	}
 
 	public getSummary() {

@@ -5,6 +5,7 @@ import TerminalLogger from "../services/TerminalLogger";
 import DB from "./DB.interface";
 import { SUMMARY_TERM } from "../utils/constants";
 import config from "../config";
+import Entry from "./models/Entry";
 
 export default class FirestoreDB implements DB {
 	private language: AvailableLanguages;
@@ -20,7 +21,6 @@ export default class FirestoreDB implements DB {
 		this.language = language;
 		this.jsonHelper = new JsonHelper(language);
 		this.terminalLogger = new TerminalLogger(language);
-		this.init();
 	}
 
 	public init() {
@@ -104,13 +104,13 @@ export default class FirestoreDB implements DB {
 	/**Retrieves all the documents (entries and summary) in a FirestoreDB collection as an array of objects.*/
 	public async getAll() {
 		const snapshot = await this.collection.get();
-		return snapshot.docs.map(doc => doc.data());
+		return snapshot.docs.map(doc => doc.data() as Entry);
 	}
 
 	/**Retrieves a document entry in a FirestoreDB collection as an object.*/
 	public async getEntry(term: string) {
 		const snapshot = await this.collection.doc(this.slugify(term)).get();
-		return snapshot.data();
+		return snapshot.data() ? (snapshot.data() as Entry) : null;
 	}
 
 	/**Retrieves a summary entry in a FirestoreDB collection as an object.*/
