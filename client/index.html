@@ -1,7 +1,3 @@
-<!--
-	WORK IN PROGRESS
--->
-
 <!DOCTYPE html lang="en">
 <html>
 	<head>
@@ -9,33 +5,82 @@
 		<title>Normative Legal Dictionary</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="../build/client/css/tailwind.css" />
+		<!-- <link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css?family=Lusitana"
+		/> -->
+		<!-- <style>
+			body {
+				font-family: "Lusitana", serif;
+				font-weight: 400;
+			}
+		</style> -->
+
 		<meta
 			http-equiv="Content-Security-Policy"
 			content="script-src 'self' 'unsafe-inline';"
 		/>
 	</head>
 
-	<body class="bg-green-200">
-		<h1 class="text-4xl text-center text-blue-500 ">Hello World!!!</h1>
-		This is text.
-		<div id="entry"></div>
-		<button id="get-term-button">Click here to get term</button>
+	<body style="font-family: Lusitana">
+		<!-- <body> -->
+		<div class="bg-gray-100 rounded-md shadow-lg">
+			<!-- <div class="bg-gray-200 flex justify-end"> -->
+			<!-- <svg class="h-6 w-6 text-red-500" src="svg/icon-minus-circle.svg" /></svg> -->
+			<!-- _ [] X -->
+			<!-- <svg
+				fill="red"
+				class="h-6 w-6 fill-content text-blue-500"
+				xmlns="http://www.w3.org/2000/svg"
+				viewBox="0 0 24 24"
+			>
+				<path
+					class="heroicon-ui"
+					d="M4.93 19.07A10 10 0 1 1 19.07 4.93 10 10 0 0 1 4.93 19.07zm1.41-1.41A8 8 0 1 0 17.66 6.34 8 8 0 0 0 6.34 17.66zM13.41 12l1.42 1.41a1 1 0 1 1-1.42 1.42L12 13.4l-1.41 1.42a1 1 0 1 1-1.42-1.42L10.6 12l-1.42-1.41a1 1 0 1 1 1.42-1.42L12 10.6l1.41-1.42a1 1 0 1 1 1.42 1.42L13.4 12z"
+				/>
+			</svg> -->
+			<!-- <img class="h-6 w-6" src="svg/icon-x-circle.svg" /></img> -->
+			<!-- </div> -->
 
-		<button id="firebaseui-auth-container" class="bg-blue-400 rounded-md p-2">
-			Log in
-		</button>
+			<!-- header row with searchbar and title -->
+			<div class="flex rounded-t-md">
+				<div class="w-1/4 h-20 bg-red-300 flex justify-center items-center">
+					[menu] [___searchbar___]
+				</div>
+				<div
+					class="w-3/4 text-3xl bg-blue-400 flex justify-center items-center"
+				>
+					Normative Legal Dictionary
+				</div>
+			</div>
 
-		<div id="username"></div>
+			<!-- main section with entries column and entry body -->
+			<div class="flex">
+				<!-- entries column -->
+				<div class="entries-column bg-yellow-200 w-1/4"></div>
+				<!-- entry body -->
+				<div id="entry-body" class="bg-teal-300 w-3/4 py-3 px-4">
+					Here goes entry body.
+				</div>
+			</div>
 
+			<!-- misc stuff -->
+			<div id="entry"></div>
+			<button id="get-term-button">Click here to get term</button>
+
+			<button id="auth-button" class="bg-blue-400 rounded-md p-2">
+				Log in
+			</button>
+
+			<div id="username"></div>
+		</div>
 		<script>
 			var exports = { __esModule: true };
 		</script>
 
-		<!-- <script src="../build/client/renderer.js"></script> -->
 		<script>
-			require("../build/client/renderer.js");
-			// `require` instead of `<script src=...>` to enable importing into `renderer.js`
-			// TODO: Find out why this works!
+			require("../build/client/Renderer.js");
+			// `require` instead of `<script src="../build/client/renderer.js">` to enable importing into `renderer.js`
 		</script>
 	</body>
 </html>

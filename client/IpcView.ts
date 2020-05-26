@@ -10,18 +10,8 @@ export default class IpcView {
 
 		return new Promise(resolve => {
 			this.ipcRenderer.on(channel, (event, response) => {
-				if (channel === "entry-channel")
-					response.translation = this.encode(response.translation);
-
 				resolve(response);
 			});
-		});
-	}
-
-	/**Replaces any character inside the Unicode range 00A0 to 9999 with its equivalent HTML entity in the translation field. Prevents misencoded characters in the view.*/
-	private encode(translation: string) {
-		return translation.replace(/[\u00A0-\u9999<>\&]/gim, char => {
-			return "&#" + char.charCodeAt(0) + ";";
 		});
 	}
 }

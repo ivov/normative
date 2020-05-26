@@ -6,6 +6,9 @@ const prod = process.env.NODE_ENV === "production";
 module.exports = {
 	plugins: [
 		require("tailwindcss"),
+		require("postcss-copy")({
+			dest: "build/client/assets" // for now, only fonts
+		}),
 		prod ? require("autoprefixer") : null,
 		prod ? cssnano({ preset: "default" }) : null,
 		prod

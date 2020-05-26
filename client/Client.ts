@@ -20,7 +20,7 @@ export default class Client {
 		app.allowRendererProcessReuse = true;
 
 		this.db = new MongoDB("English");
-		this.db.init(); // async
+		this.db.init(); // TODO: This is async.
 
 		this.registerIpcChannels();
 		this.initializeFirebase();
@@ -43,14 +43,17 @@ export default class Client {
 
 	private createWindow() {
 		this.window = new BrowserWindow({
-			width: 800,
+			width: 1000,
 			height: 600,
 			resizable: false,
+			// transparent: true,
+			// frame: false,
 			webPreferences: { nodeIntegration: true, nativeWindowOpen: true } // enables `require` in index.html
 		});
 
 		this.window.loadURL("file://" + process.cwd() + "/client/index.html");
-		this.window.webContents.openDevTools();
+		// this.window.webContents.openDevTools();
+		// this.window.setMenu(null);
 
 		this.window.on("closed", () => {
 			this.window = null; // ensure destruction
@@ -65,6 +68,7 @@ export default class Client {
 	};
 
 	private initializeFirebase() {
+		// TODO: Might have already been initialized.
 		firebase.initializeApp({
 			apiKey: config.firebase.apiKey,
 			authDomain: config.firebase.apiKey,

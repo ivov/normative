@@ -45,6 +45,7 @@ export default class MongoDB implements DB {
 
 	public async disconnect() {
 		await this.client.close();
+		TerminalLogger.success("Disconnected from MongoDB");
 	}
 
 	/**Sets a unique index on the active collection to prevent duplicate terms. Used only once per collection.*/
@@ -63,9 +64,9 @@ export default class MongoDB implements DB {
 	}
 
 	private async fromSingleFile() {
-		const allEntriesObject = this.jsonHelper.getBigObjectFromSingleJsonFile();
+		const { allEntries } = this.jsonHelper.getBigObjectFromSingleJsonFile();
 
-		for (let entryObject of allEntriesObject.allEntries) {
+		for (let entryObject of allEntries) {
 			await this.collection.insertOne(entryObject);
 			this.terminalLogger.uploadedOne(entryObject.term);
 		}
@@ -103,6 +104,7 @@ export default class MongoDB implements DB {
 	}
 
 	public getEntry(term: string) {
+		// TODO: convert mongoDB object to entry
 		return this.collection.findOne({ term });
 	}
 

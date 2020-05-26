@@ -1,3 +1,22 @@
 @tailwind base;
+
+@font-face {
+	font-family: Lusitana;
+	font-weight: 400;
+	src: url(../assets/fonts/Lusitana/Lusitana-Regular.ttf) format("truetype");
+}
+
+@font-face {
+	font-family: Lusitana;
+	font-weight: bold;
+	src: url(../assets/fonts/Lusitana/Lusitana-Bold.ttf) format("truetype");
+}
+
+body {
+	font-family: "Lusitana", serif;
+	font-weight: 400;
+}
+
 @tailwind components;
+
 @tailwind utilities;

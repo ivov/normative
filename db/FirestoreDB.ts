@@ -20,9 +20,10 @@ export default class FirestoreDB implements DB {
 		this.language = language;
 		this.jsonHelper = new JsonHelper(language);
 		this.terminalLogger = new TerminalLogger(language);
+		this.init();
 	}
 
-	init() {
+	public init() {
 		firebase.initializeApp({
 			apiKey: config.firebase.apiKey,
 			authDomain: config.firebase.apiKey,
@@ -64,9 +65,9 @@ export default class FirestoreDB implements DB {
 	}
 
 	async fromSingleFile() {
-		const allEntriesObject = this.jsonHelper.getBigObjectFromSingleJsonFile();
+		const { allEntries } = this.jsonHelper.getBigObjectFromSingleJsonFile();
 
-		for (let entryObject of allEntriesObject.allEntries) {
+		for (let entryObject of allEntries) {
 			await this.collection
 				.doc(this.slugify(entryObject.term))
 				.set(entryObject);

@@ -1,35 +1,20 @@
 import minimist from "minimist";
-import DocxParser from "../services/DocxParser";
+import DocxParser from "./DocxParser";
+import JsonHelper from "./JsonHelper";
+import TerminalLogger from "./TerminalLogger";
 import MongoDB from "../db/MongoDB";
-import JsonHelper from "../services/JsonHelper";
 import FirestoreDB from "../db/FirestoreDB";
-import TerminalLogger from "../services/TerminalLogger";
 
 /**Responsible for receiving CLI arguments and calling the corresponding functions.
- * - `--language` → `English` or `Spanish`
- * Set the target DOCX file, JSON file(s) and MongoDB collection. Required for all operations.
- *
- * - `--convert` → `single` or `multiple`
- * Convert the DOCX file into a single JSON file or to multiple JSON files.
- *
- * - `--uploadMongo` → `single` or `multiple`
- * Upload to MongoDB from a single JSON file or from multiple JSON files.
- *
- * - `--uploadFirestore` → `single` or `multiple`
- * Upload to Firestore from a single JSON file or from multiple JSON files.
- *
- * - `--deleteJson`
- * Delete all JSON files in the relevant JSON directory.
- *
- * - `--deleteMongo`
- * Delete all documents in the relevant MongoDB collection.
- *
- * - `--deleteFirestore`
- * Delete all documents in the relevant Firestore collection.
- *
- * - `--retrieveEntry` → [entry]
- * Retrieve an entry and log it to the console.
- */
+ * - `--language`: Set the target DOCX file, JSON file(s) and MongoDB collection. Required for all operations.
+ * - `--convert`: Convert the DOCX file into a single JSON file or to multiple JSON files.
+ * - `--uploadMongo`: Upload to MongoDB from a single JSON file or from multiple JSON files.
+ * - `--uploadFirestore`: Upload to Firestore from a single JSON file or from multiple JSON files.
+ * - `--deleteJson`: Delete all JSON files in the relevant JSON directory.
+ * - `--deleteMongo`: Delete all documents in the relevant MongoDB collection.
+ * - `--deleteFirestore`: Delete all documents in the relevant Firestore collection.
+ * - `--retrieveEntry`: Retrieve an entry from JSON and log it to the console.
+ * */
 export default class Cli {
 	args: minimist.ParsedArgs;
 
@@ -37,31 +22,20 @@ export default class Cli {
 		this.args = this.getArgs();
 	}
 
-	/**Dispatches operation based on CLI args.*/
+	/**Dispatches operation based on CLI arg.*/
 	public async init() {
-		const {
-			convert,
-			uploadMongo,
-			uploadFirestore,
-			deleteMongo,
-			deleteJson,
-			deleteFirestore,
-			retrieveEntry
-		} = this.args;
-
-		if (convert) await this.convert();
-		if (uploadMongo) await this.uploadMongo();
-		if (uploadFirestore) await this.uploadFirestore();
-		if (deleteMongo) this.deleteMongo();
-		if (deleteJson) await this.deleteJson();
-		if (deleteFirestore) await this.deleteFirestore();
-		if (retrieveEntry) await this.retrieveEntry();
+		if (this.args.convert) await this.convert();
+		if (this.args.uploadMongo) await this.uploadMongo();
+		if (this.args.uploadFirestore) await this.uploadFirestore();
+		if (this.args.deleteMongo) this.deleteMongo();
+		if (this.args.deleteJson) await this.deleteJson();
+		if (this.args.deleteFirestore) await this.deleteFirestore();
+		if (this.args.retrieveEntry) await this.retrieveEntry();
 	}
 
 	/**Receives CLI args and parse them into an object.*/
 	private getArgs(): minimist.ParsedArgs {
 		const args = minimist(process.argv.slice(2), {
-			// excludes runtime path and script path
 			string: [
 				"language",
 				"convert",
@@ -71,23 +45,22 @@ export default class Cli {
 			],
 			boolean: ["deleteJson", "deleteMongo", "deleteFirestore"]
 		});
-		this.argsCheck(args);
+
+		this.validateArgs(args);
 
 		return args;
 	}
 
 	/**Checks that all flags passed to the convert or upload operation are correct.*/
-	private argsCheck(args: minimist.ParsedArgs) {
+	private validateArgs(args: minimist.ParsedArgs) {
 		if (!args.language) throw Error("The --language flag is required.");
 
 		if (!args.language.match(/English|Spanish/))
 			throw Error("Arg for --language flag must be 'English' or 'Spanish'.");
 
-		const regex = /single|multiple/;
-
 		if (
-			(args.convert && !args.convert.match(regex)) ||
-			(args.upload && !args.upload.match(regex))
+			(args.convert && !args.convert.match(/single|multiple/)) ||
+			(args.upload && !args.upload.match(/single|multiple/))
 		)
 			throw Error("Arg for --convert flag must be 'single' or 'multiple'.");
 	}
@@ -121,7 +94,6 @@ export default class Cli {
 	/**Uploads all documents to the relevant Firestore collection.*/
 	private async uploadFirestore() {
 		const db = new FirestoreDB(this.args.language);
-		db.init();
 
 		await db.uploadAll(
 			this.args.uploadMongo === "single"
@@ -143,7 +115,6 @@ export default class Cli {
 	/**Deletes all documents in the relevant Firestore collection.*/
 	private async deleteFirestore() {
 		const db = new FirestoreDB(this.args.language);
-		db.init();
 		await db.deleteAll();
 		db.disconnect();
 	}

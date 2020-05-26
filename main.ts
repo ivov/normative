@@ -1,6 +1,6 @@
 // WORK IN PROGRESS
 
-import CLI from "./utils/CLI";
+import CLI from "./services/CLI";
 import TerminalLogger from "./services/TerminalLogger";
 
 const main = async () => {

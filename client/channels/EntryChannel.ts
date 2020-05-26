@@ -12,6 +12,14 @@ export default class EntryChannel implements IpcChannel {
 
 	public async handle(event: IpcMainEvent, targetTerm: string) {
 		const entry = await this.db.getEntry(targetTerm);
+		entry.translation = this.encode(entry.translation);
 		event.sender.send(this.name, entry);
+	}
+
+	/**Replaces any character inside the Unicode range 00A0 to 9999 with its equivalent HTML entity in the translation field. Prevents misencoded characters in the view.*/
+	private encode(translation: string) {
+		return translation.replace(/[\u00A0-\u9999<>\&]/gim, char => {
+			return "&#" + char.charCodeAt(0) + ";";
+		});
 	}
 }

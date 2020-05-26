@@ -102,12 +102,12 @@ $ npm run [script]
 
 ### Development
 
-| Script       | Action                                                                         |
-| ------------ | ------------------------------------------------------------------------------ |
-| `client`     | Run the Electron client.                                                       |
-| `dev-client` | Run the Electron client while hot-reloading/recompiling any changes.           |
-| `test`       | Run ~30 unit tests for the parser.                                             |
-| `css`        | Optimize `./client/css/tailwind.css` with PostCSS plugins, only in production. |
+| Script   | Action                                                                         |
+| -------- | ------------------------------------------------------------------------------ |
+| `client` | Run the Electron client.                                                       |
+| `dev`    | Run the Electron client while hot-reloading/recompiling any changes.           |
+| `test`   | Run ~30 unit tests for the parser.                                             |
+| `css`    | Optimize `./client/css/tailwind.css` with PostCSS plugins, only in production. |
 
 ### JSON management
 

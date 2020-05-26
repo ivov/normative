@@ -1,10 +1,10 @@
 import cheerio from "cheerio";
 import DocxParser from "../services/DocxParser";
+import JsonHelper from "../services/JsonHelper";
 import Summary from "../db/models/Summary";
 import Entry from "../db/models/Entry";
-import JsonHelper from "../services/JsonHelper";
 
-// Conversion result for single entry at `all_variants_unit.docx`.
+// Conversion result for single entry at `tests/all_variants_unit.docx`.
 export const allVariantResult = {
 	term: "aaa",
 	translation: "traducción <contexto> | traducción <contexto>",

@@ -87,9 +87,9 @@ export default class TerminalLogger {
 	public logEntry(targetTerm: string) {
 		const jsonHelper = new JsonHelper(this.language);
 
-		const allEntriesObject = jsonHelper.getBigObjectFromSingleJsonFile();
+		const { allEntries } = jsonHelper.getBigObjectFromSingleJsonFile();
 
-		const entryObject = allEntriesObject.allEntries.find(
+		const entryObject = allEntries.find(
 			entryObject => entryObject.term === targetTerm
 		);
 
